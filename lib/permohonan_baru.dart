@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import "beranda.dart";
 
 class PermohonanBaruScreen extends StatefulWidget {
   const PermohonanBaruScreen({super.key});
   @override
-  _PermohonanBaruScreenState createState() => _PermohonanBaruScreenState();
+  PermohonanBaruScreenState createState() => PermohonanBaruScreenState();
 }
 
-class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
+class PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
-  final TextEditingController _notesController =
-      TextEditingController(); // Define the controller for Catatan
+  final TextEditingController _notesController = TextEditingController();
   DateTime? _selectedDate;
   String? _selectedApplicationType;
 
@@ -23,42 +21,87 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
         title: Text(
           'Permohonan Baru',
           style: TextStyle(
-            color: Colors.white, // Change title color to white
-            fontSize: 24.0, // Increase font size
+            color: Colors.white,
+            fontSize: 24.0,
             shadows: [
               Shadow(
-                color: Colors.blue, // Add blue shadow
-                offset: Offset(2.0, 2.0), // Shadow offset
-                blurRadius: 4.0, // Shadow blur radius
+                color: Colors.blue,
+                offset: Offset(2.0, 2.0),
+                blurRadius: 4.0,
               ),
             ],
           ),
         ),
-        backgroundColor: Colors.black87, // Make the AppBar background black
-        iconTheme: IconThemeData(
-          color: Colors.white,
-        ), // Change back button color to white
-        elevation: 0, // Remove shadow
+        backgroundColor: Colors.black87,
+        iconTheme: IconThemeData(color: Colors.white),
+        elevation: 0,
       ),
+      backgroundColor: Colors.black87,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: 'Nama'),
+              style: TextStyle(color: Colors.white), // Set text color to white
+              decoration: InputDecoration(
+                labelText: 'Nama',
+                labelStyle: TextStyle(
+                  color: Colors.white,
+                ), // Set label color to white
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                  ), // Set border color to white
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                  ), // Set focused border color to white
+                ),
+              ),
             ),
             TextField(
               controller: _phoneController,
-              decoration: InputDecoration(labelText: 'Nomor HP'),
+              style: TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Nomor HP',
+                labelStyle: TextStyle(color: Colors.white),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+              ),
               keyboardType: TextInputType.phone,
             ),
             TextField(
               controller: _addressController,
-              decoration: InputDecoration(labelText: 'Alamat'),
+              style: TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Alamat',
+                labelStyle: TextStyle(color: Colors.white),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+              ),
             ),
             TextField(
-              decoration: InputDecoration(labelText: 'Tanggal Permohonan'),
+              style: TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Tanggal Permohonan',
+                labelStyle: TextStyle(color: Colors.white),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+              ),
               readOnly: true,
               onTap: () async {
                 DateTime? pickedDate = await showDatePicker(
@@ -81,6 +124,19 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
               ),
             ),
             TextField(
+              style: TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Jenis Permohonan',
+                labelStyle: TextStyle(color: Colors.white),
+                hintText: 'Pilih Jenis Permohonan',
+                hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+              ),
               readOnly: true,
               onTap: () {
                 showDialog(
@@ -112,23 +168,27 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
                   },
                 );
               },
-              decoration: InputDecoration(
-                labelText: 'Jenis Permohonan',
-                hintText: 'Pilih Jenis Permohonan',
-              ),
               controller: TextEditingController(
                 text: _selectedApplicationType ?? '',
               ),
             ),
-            SizedBox(height: 16.0), // Added spacing before the save button
+            SizedBox(height: 16.0),
             TextField(
-              controller:
-                  _notesController, // Use the existing controller for Catatan
-              decoration: InputDecoration(labelText: 'Catatan'),
+              controller: _notesController,
+              style: TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Catatan',
+                labelStyle: TextStyle(color: Colors.white),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
-                // Show confirmation dialog with entered data
                 showDialog(
                   context: context,
                   builder: (context) {
