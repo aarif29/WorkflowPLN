@@ -10,66 +10,61 @@ class BerandaScreen extends StatefulWidget {
 }
 
 class _BerandaScreenState extends State<BerandaScreen> {
+  int _selectedIndex = 0;
+  final PageController _pageController = PageController();
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    _pageController.jumpToPage(index);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity, // Ini yang ditambahkan!
-        decoration: BoxDecoration(color: Colors.black87),
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildDashboardButton(context, 'DASHBOARD', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => DashboardScreen()),
-              );
-            }),
-            _buildDashboardButton(context, 'PERMOHONAN BARU', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => PermohonanBaruScreen()),
-              );
-            }),
-            _buildDashboardButton(context, 'SURVEY', () {}),
-            _buildDashboardButton(context, 'UPDATE', () {}),
-          ],
-        ),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        children: [
+          DashboardScreen(),
+          PermohonanBaruScreen(),
+          Container(color: Colors.blue), // Placeholder for Survey screen
+          Container(color: Colors.green), // Placeholder for Update screen
+        ],
       ),
-    );
-  }
-
-  Widget _buildDashboardButton(
-    BuildContext context,
-    String title,
-    VoidCallback onPressed,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.white,
-          width: 2,
-        ), // Adding white border
-        borderRadius: BorderRadius.circular(8.0), // Rounded corners
-      ),
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.8,
-        height: 80.0,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey[800],
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
           ),
-          onPressed: onPressed,
-          child: Text(
-            title,
-            style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add_box),
+            label: 'Permohonan Baru',
           ),
-        ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.checklist_rounded),
+            label: 'Survey',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.update), label: 'Update'),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: const Color.fromARGB(255, 0, 106, 255),
+        unselectedItemColor: Colors.black,
+        selectedLabelStyle: const TextStyle(
+          color: Color.fromARGB(255, 0, 106, 255),
+        ), // Set selected label color to blue
+        unselectedLabelStyle: const TextStyle(
+          color: Colors.black,
+        ), // Set unselected label color to black
+        showUnselectedLabels:
+            true, // Ensure unselected labels are always visible
+        onTap: _onItemTapped,
       ),
     );
   }
