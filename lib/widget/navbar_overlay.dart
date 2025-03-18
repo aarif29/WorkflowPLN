@@ -38,6 +38,7 @@ class BerandaScreenState extends State<BerandaScreen> {
                 PermohonanBaruScreen(
                   onPermohonanAdded: _addPermohonan,
                   onNavigateToAntrian: () => _pageController.jumpToPage(2),
+                  // permohonanListNotifier: ValueNotifier<List<Map<String, String?>>>(_permohonanList),
                 ),
                 AntrianScreen(permohonanList: _permohonanList),
                 Container(color: Colors.green),

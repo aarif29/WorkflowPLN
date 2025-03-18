@@ -203,8 +203,11 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
           firstDate: DateTime(2000),
           lastDate: DateTime(2101),
           builder: (context, child) {
-            return Theme(data: ThemeData.dark(), child: child!);
-          },
+                            return Theme(
+                              data: ThemeData.dark(),
+                              child: child!,
+                            );
+                          },
         );
         if (pickedDate != null) {
           setState(() {
@@ -218,65 +221,58 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
   }
 
   Widget _buildApplicationTypeField() {
-    return TextField(
-      controller: _applicationTypeController,
-      style: const TextStyle(color: Colors.white),
-      readOnly: true,
-      decoration: InputDecoration(
-        labelText: 'Jenis Permohonan',
-        labelStyle: const TextStyle(color: Colors.white),
-        hintText: 'Pilih Jenis Permohonan',
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-        filled: true,
-        fillColor: Colors.black87,
-        enabledBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.white),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(
-            color: Colors.blueAccent,
-          ), // Warna biru saat fokus
-        ),
+  return TextField(
+    controller: _applicationTypeController,
+    style: const TextStyle(color: Colors.white),
+    readOnly: true,
+    decoration: InputDecoration(
+      labelText: 'Jenis Permohonan',
+      labelStyle: const TextStyle(color: Colors.white),
+      hintText: 'Pilih Jenis Permohonan',
+      hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+      filled: true,
+      fillColor: Colors.black87,
+      enabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.white),
       ),
-      onTap: () {
-        showDialog(
-          context: context,
-          builder:
-              (context) => AlertDialog(
-                backgroundColor: Colors.black87, // Tema gelap
-                title: const Text(
-                  'Pilih Jenis Permohonan',
-                  style: TextStyle(color: Colors.white), // Warna teks putih
-                ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children:
-                      ['Pasang Baru', 'Perubahan Daya', 'PFK', 'Lainnya']
-                          .map(
-                            (type) => ListTile(
-                              title: Text(
-                                type,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                ), // Warna teks putih
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  _selectedApplicationType = type;
-                                  _applicationTypeController.text = type;
-                                });
-                                Navigator.pop(context);
-                              }, // Efek tekan transparan
-                            ),
-                          )
-                          .toList(),
-                ),
-              ),
-        );
-      },
-    );
-  }
-
+      focusedBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.blueAccent), // Warna biru saat fokus
+      ),
+    ),
+    onTap: () {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.black87, // Tema gelap
+          title: const Text(
+            'Pilih Jenis Permohonan',
+            style: TextStyle(color: Colors.white), // Warna teks putih
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: ['Pasang Baru', 'Perubahan Daya', 'PFK', 'Lainnya']
+                .map(
+                  (type) => ListTile(
+                    title: Text(
+                      type,
+                      style: const TextStyle(color: Colors.white), // Warna teks putih
+                    ),
+                    onTap: () {
+                      setState(() {
+                        _selectedApplicationType = type;
+                        _applicationTypeController.text = type;
+                      });
+                      Navigator.pop(context);
+                    },
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+      );
+    },
+  );
+}
   void _saveData() {
     final newPermohonan = {
       'name': _nameController.text,

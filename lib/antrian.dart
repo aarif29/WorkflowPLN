@@ -63,12 +63,12 @@ class AntrianScreen extends StatelessWidget {
     BuildContext context,
     Map<String, String?> permohonan,
   ) {
+    DateTime? selectedDate;
     bool showDelegasikanButton = false;
 
     showDialog(
       context: context,
       builder: (context) {
-        DateTime? selectedDate;
         return StatefulBuilder(
           builder: (context, setState) {
             return Dialog(
