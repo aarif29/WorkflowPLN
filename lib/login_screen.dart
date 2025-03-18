@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'beranda.dart';
+import 'widget/navbar_overlay.dart'; // Import BerandaScreen
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,6 +12,40 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   String _user = '';
   String _password = '';
+
+  void _attemptLogin() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      if (_user == 'user' && _password == 'admin') {
+        // Login sukses -> navigasi ke BerandaScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BerandaScreen(),
+          ),
+        );
+      } else {
+        // Login gagal -> tampilkan alert
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Login Ditolak'),
+              content: const Text('User atau password salah'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelText: 'User',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'User tidak boleh kosong';
-                  }
-                  return null;
-                },
+                validator: (value) => value!.isEmpty ? 'User tidak boleh kosong' : null,
                 onSaved: (value) => _user = value!,
               ),
               const SizedBox(height: 20),
@@ -43,82 +72,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   border: OutlineInputBorder(),
                 ),
                 obscureText: true,
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Password tidak boleh kosong';
-                  }
-                  return null;
-                },
+                validator: (value) => value!.isEmpty ? 'Password tidak boleh kosong' : null,
                 onSaved: (value) => _password = value!,
-                onFieldSubmitted: (value) {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    if (_user == 'user' && _password == 'admin') {
-                      // Login diterima
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BerandaScreen(),
-                        ),
-                      );
-                    } else {
-                      // Login ditolak
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('Login Ditolak'),
-                            content: const Text('user atau password salah'),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    }
-                  }
-                },
+                onFieldSubmitted: (value) => _attemptLogin(),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    if (_user == 'user' && _password == 'admin') {
-                      // Login diterima
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BerandaScreen(),
-                        ),
-                      );
-                    } else {
-                      // Login ditolak
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('Login Ditolak'),
-                            content: const Text('user atau password salah'),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    }
-                  }
-                },
+                onPressed: _attemptLogin,
                 child: const Text('Login'),
               ),
             ],
