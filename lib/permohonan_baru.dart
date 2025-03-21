@@ -308,6 +308,7 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.green,
+        duration: const Duration(seconds: 1),
       ),
     );
   }
