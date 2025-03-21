@@ -1,9 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // Import package intl
 
-class AntrianScreen extends StatelessWidget {
+class AntrianScreen extends StatefulWidget {
   final List<Map<String, String?>> permohonanList;
 
   const AntrianScreen({super.key, required this.permohonanList});
+
+  @override
+  State<AntrianScreen> createState() => _AntrianScreenState();
+}
+
+class _AntrianScreenState extends State<AntrianScreen> {
+  void _updatePermohonan(int index, Map<String, String?> updatedPermohonan) {
+    setState(() {
+      widget.permohonanList[index] = updatedPermohonan;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +24,7 @@ class AntrianScreen extends StatelessWidget {
         color: Colors.black87,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: permohonanList.isEmpty
+          child: widget.permohonanList.isEmpty
               ? const Center(
                   child: Text(
                     'Belum ada data untuk ditampilkan',
@@ -21,9 +33,9 @@ class AntrianScreen extends StatelessWidget {
                   ),
                 )
               : ListView.builder(
-                  itemCount: permohonanList.length,
+                  itemCount: widget.permohonanList.length,
                   itemBuilder: (context, index) {
-                    final permohonan = permohonanList[index];
+                    final permohonan = widget.permohonanList[index];
                     return Container(
                       margin: const EdgeInsets.symmetric(vertical: 4.0),
                       decoration: BoxDecoration(
@@ -48,7 +60,14 @@ class AntrianScreen extends StatelessWidget {
                             permohonan['name'] ?? 'No Name',
                             style: const TextStyle(color: Colors.white),
                           ),
-                          onTap: () => _showDetailDialog(context, permohonan),
+                          subtitle: permohonan['dateSurvey'] != null
+                              ? Text(
+                                  'Survey: ${DateFormat('d MMMM y', 'id').format(DateTime.parse(permohonan['dateSurvey']!))}',
+                                  style: const TextStyle(
+                                      color: Colors.cyanAccent, fontSize: 14),
+                                )
+                              : null,
+                          onTap: () => _showDetailDialog(context, permohonan, index),
                         ),
                       ),
                     );
@@ -62,9 +81,18 @@ class AntrianScreen extends StatelessWidget {
   void _showDetailDialog(
     BuildContext context,
     Map<String, String?> permohonan,
+    int index,
   ) {
     DateTime? selectedDate;
-    bool showDelegasikanButton = false;
+
+    final _formKey = GlobalKey<FormState>();
+    String? name = permohonan['name'];
+    String? phone = permohonan['phone'];
+    String? address = permohonan['address'];
+    String? date = permohonan['date'];
+    String? applicationType = permohonan['applicationType'];
+    String? notes = permohonan['notes'];
+    String? dateSurvey = permohonan['dateSurvey'];
 
     showDialog(
       context: context,
@@ -74,86 +102,181 @@ class AntrianScreen extends StatelessWidget {
             return Dialog(
               backgroundColor: Colors.black87,
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Detail Permohonan',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
+                padding: const EdgeInsets.all(12.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Detail Permohonan',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    ..._buildDetailItems(permohonan),
-                    const SizedBox(height: 16),
-
-                    // Tombol Survey
-                    ElevatedButton(
-                      onPressed: () async {
-                        DateTime? pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime(2101),
-                          builder: (context, child) {
-                            return Theme(
-                              data: ThemeData.dark(),
-                              child: child!,
-                            );
-                          },
-                        );
-
-                        if (pickedDate != null) {
-                          setState(() {
-                            selectedDate = pickedDate;
-                            showDelegasikanButton = true;
-                          });
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        initialValue: name,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: 'Nama',
+                          labelStyle: TextStyle(color: Colors.white),
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) => name = value,
                       ),
-                      child: const Text('Survey'),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Tombol Delegasikan (hanya muncul setelah memilih tanggal survey)
-                    if (showDelegasikanButton)
-                      Center(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Permohonan telah didelegasikan!'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        initialValue: phone,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: 'Nomor HP',
+                          labelStyle: TextStyle(color: Colors.white),
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) => phone = value,
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        initialValue: address,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: 'Alamat',
+                          labelStyle: TextStyle(color: Colors.white),
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) => address = value,
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        initialValue: date,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: 'Tanggal Permohonan',
+                          labelStyle: TextStyle(color: Colors.white),
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) => date = value,
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        initialValue: applicationType,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: 'Jenis Permohonan',
+                          labelStyle: TextStyle(color: Colors.white),
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) => applicationType = value,
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        initialValue: notes,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: 'Catatan',
+                          labelStyle: TextStyle(color: Colors.white),
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) => notes = value,
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () async {
+                              final DateTime? pickedDate = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime(2100),
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: ThemeData.dark().copyWith(
+                                      colorScheme: const ColorScheme.dark(
+                                        primary: Colors.green,
+                                        onPrimary: Colors.white,
+                                        surface: Colors.black,
+                                        onSurface: Colors.white,
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (pickedDate != null) {
+                                setState(() {
+                                  selectedDate = pickedDate;
+                                  dateSurvey = pickedDate.toString();
+                                });
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                            ),
+                            child: const Text('Survey', style: TextStyle(color: Colors.white)),
                           ),
-                          child: const Text('Delegasikan'),
-                        ),
+                          ElevatedButton(
+                            onPressed: () {
+                              _updatePermohonan(index, {
+                                'name': name,
+                                'phone': phone,
+                                'address': address,
+                                'date': date,
+                                'applicationType': applicationType,
+                                'notes': notes,
+                                'dateSurvey': dateSurvey,
+                              });
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                            ),
+                            child: const Text('Simpan Perubahan', style: TextStyle(color: Colors.white)),
+                          ),
+                        ],
                       ),
-
-                    // Tombol Tutup
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          'Tutup',
-                          style: TextStyle(color: Colors.white),
+                      if (selectedDate != null) ...[
+                        const SizedBox(height: 8),
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              _updatePermohonan(index, {
+                                'name': name,
+                                'phone': phone,
+                                'address': address,
+                                'date': date,
+                                'applicationType': applicationType,
+                                'notes': notes,
+                                'dateSurvey': dateSurvey,
+                              });
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Center(
+                                    child: Text(
+                                      'Permohonan telah didelegasikan',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                  backgroundColor: Colors.green,
+                                  duration: const Duration(seconds: 1),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                            ),
+                            child: const Text('Delegasikan', style: TextStyle(color: Colors.white)),
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
+                      ],
+                    ],
+                  ),
                 ),
               ),
             );
@@ -161,23 +284,5 @@ class AntrianScreen extends StatelessWidget {
         );
       },
     );
-  }
-
-  List<Widget> _buildDetailItems(Map<String, String?> permohonan) {
-    return [
-      'Nama: ${permohonan['name']}',
-      'Nomor HP: ${permohonan['phone']}',
-      'Alamat: ${permohonan['address']}',
-      'Tanggal: ${permohonan['date']}',
-      'Jenis: ${permohonan['applicationType']}',
-      'Catatan: ${permohonan['notes']}',
-    ]
-        .map(
-          (text) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(text, style: const TextStyle(color: Colors.white)),
-          ),
-        )
-        .toList();
   }
 }
