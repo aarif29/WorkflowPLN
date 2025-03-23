@@ -17,6 +17,12 @@ class _AntrianScreenState extends State<AntrianScreen> {
     });
   }
 
+  void _deletePermohonan(int index) {
+    setState(() {
+      widget.permohonanList.removeAt(index);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -198,7 +204,7 @@ class _AntrianScreenState extends State<AntrianScreen> {
                                   return Theme(
                                     data: ThemeData.dark().copyWith(
                                       colorScheme: const ColorScheme.dark(
-                                        primary: Colors.green,
+                                        primary: Color.fromARGB(255, 0, 204, 255),
                                         onPrimary: Colors.white,
                                         surface: Colors.black,
                                         onSurface: Colors.white,
@@ -237,6 +243,15 @@ class _AntrianScreenState extends State<AntrianScreen> {
                               backgroundColor: Colors.green,
                             ),
                             child: const Text('Simpan Perubahan', style: TextStyle(color: Colors.white)),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              _showDeleteConfirmation(context, index);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                            ),
+                            child: const Text('Hapus', style: TextStyle(color: Colors.white)),
                           ),
                         ],
                       ),
@@ -281,6 +296,53 @@ class _AntrianScreenState extends State<AntrianScreen> {
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.black87,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          title: const Text(
+            'Konfirmasi Penghapusan',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: const Text(
+            'Apakah Anda yakin ingin menghapus permohonan ini?',
+            style: TextStyle(color: Colors.white),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'Batal',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _deletePermohonan(index);
+                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Tutup dialog detail permohonan
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              child: const Text(
+                'Hapus',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
         );
       },
     );
