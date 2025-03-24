@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../dashboard.dart';
 import '../permohonan_baru.dart';
 import '../antrian.dart';
+import '../selesai.dart'; // Import halaman Selesai
 
 class BerandaScreen extends StatefulWidget {
   const BerandaScreen({super.key});
@@ -38,10 +39,10 @@ class BerandaScreenState extends State<BerandaScreen> {
                 PermohonanBaruScreen(
                   onPermohonanAdded: _addPermohonan,
                   onNavigateToAntrian: () => _pageController.jumpToPage(2),
-                  // permohonanListNotifier: ValueNotifier<List<Map<String, String?>>>(_permohonanList),
                 ),
                 AntrianScreen(permohonanList: _permohonanList),
-                Container(color: Colors.green),
+                SelesaiScreen(), // Tambahkan halaman Selesai
+                Container(color: Colors.green), // Halaman Update
               ],
             ),
           ),
@@ -56,7 +57,7 @@ class BerandaScreenState extends State<BerandaScreen> {
       currentIndex: _selectedIndex,
       onTap: _onItemTapped,
       selectedItemColor: const Color.fromARGB(255, 0, 106, 255),
-      unselectedItemColor: Colors.black,
+      unselectedItemColor: Colors.white,
       showUnselectedLabels: true,
       items: const [
         BottomNavigationBarItem(
@@ -71,7 +72,14 @@ class BerandaScreenState extends State<BerandaScreen> {
           icon: Icon(Icons.checklist_rounded),
           label: 'Antrian',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.update), label: 'Update'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.check_circle_rounded),
+          label: 'Selesai',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.update),
+          label: 'Update',
+        ),
       ],
     );
   }
