@@ -47,7 +47,7 @@ class DashboardScreen extends StatelessWidget {
                 height: 80.0,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[800],
+                    backgroundColor: Colors.grey[850],
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
@@ -78,7 +78,7 @@ class DashboardScreen extends StatelessWidget {
                 height: 80.0,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[800],
+                    backgroundColor: Colors.grey[850],
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),

@@ -26,6 +26,27 @@ class _AntrianScreenState extends State<AntrianScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Antrian Survey',
+          style: TextStyle(
+            color: Colors.white, // Change title color to white
+            fontSize: 24.0, // Increase font size
+            shadows: [
+              Shadow(
+                color: Colors.blue, // Add blue shadow
+                offset: Offset(2.0, 2.0), // Shadow offset
+                blurRadius: 4.0, // Shadow blur radius
+              ),
+            ],
+          ),
+        ),
+        backgroundColor: Colors.black87, // Make the AppBar background black
+        iconTheme: IconThemeData(
+          color: Colors.white,
+        ), // Change back button color to white
+        elevation: 0, // Remove shadow
+      ),
       body: Container(
         color: Colors.black87,
         child: Padding(
