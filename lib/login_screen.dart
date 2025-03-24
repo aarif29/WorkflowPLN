@@ -20,9 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
         // Login sukses -> navigasi ke BerandaScreen
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (context) => BerandaScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => BerandaScreen()),
         );
       } else {
         // Login gagal -> tampilkan alert
@@ -62,7 +60,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelText: 'User',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) => value!.isEmpty ? 'User tidak boleh kosong' : null,
+                validator:
+                    (value) =>
+                        value!.isEmpty ? 'User tidak boleh kosong' : null,
                 onSaved: (value) => _user = value!,
               ),
               const SizedBox(height: 20),
@@ -72,14 +72,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   border: OutlineInputBorder(),
                 ),
                 obscureText: true,
-                validator: (value) => value!.isEmpty ? 'Password tidak boleh kosong' : null,
+                validator:
+                    (value) =>
+                        value!.isEmpty ? 'Password tidak boleh kosong' : null,
                 onSaved: (value) => _password = value!,
                 onFieldSubmitted: (value) => _attemptLogin(),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _attemptLogin,
-                child: const Text('Login'),
+                child: const Text(
+                  'Login',
+                  style: TextStyle(color: Colors.white, fontSize: 17.0),
+                ),
               ),
             ],
           ),
