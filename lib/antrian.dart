@@ -28,7 +28,7 @@ class _AntrianScreenState extends State<AntrianScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Antrian Survey',
+          'Antrian',
           style: TextStyle(
             color: Colors.white, // Change title color to white
             fontSize: 24.0, // Increase font size
