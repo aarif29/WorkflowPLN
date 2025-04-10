@@ -18,7 +18,6 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
-  final TextEditingController _notesController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _applicationTypeController =
       TextEditingController();
@@ -31,7 +30,6 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
     _nameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
-    _notesController.dispose();
     _dateController.dispose();
     _applicationTypeController.dispose();
     super.dispose();
@@ -68,8 +66,8 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: Colors.white, // Warna outline putih
-                    width: 2.0, // Ketebalan outline
+                    color: Colors.white,
+                    width: 2.0,
                   ),
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -133,16 +131,14 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
           _buildTextField(_phoneController, 'Nomor HP', TextInputType.phone),
           _buildTextField(_addressController, 'Alamat'),
           _buildDateField(),
-          const SizedBox(height: 12.0), // Spasi setelah Tanggal Permohonan
+          const SizedBox(height: 12.0),
           _buildApplicationTypeField(),
-          const SizedBox(height: 12.0), // Spasi setelah Jenis Permohonan
-          _buildTextField(_notesController, 'Catatan'),
-          const SizedBox(height: 16.0), // Spasi setelah Catatan
+          const SizedBox(height: 16.0),
           ElevatedButton(
             onPressed: _saveData,
             child: const Text('SIMPAN DATA'),
           ),
-          const SizedBox(height: 16.0), // Spasi setelah Tombol Simpan
+          const SizedBox(height: 16.0),
         ],
       ),
     );
@@ -186,14 +182,10 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
         filled: true,
         fillColor: Colors.black87,
         enabledBorder: const OutlineInputBorder(
-          borderSide: BorderSide(
-            color: Colors.white,
-          ), // Outline putih saat tidak fokus
+          borderSide: BorderSide(color: Colors.white),
         ),
         focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(
-            color: Colors.white,
-          ), // Outline putih saat fokus
+          borderSide: BorderSide(color: Colors.white),
         ),
       ),
       onTap: () async {
@@ -203,11 +195,11 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
           firstDate: DateTime(2000),
           lastDate: DateTime(2101),
           builder: (context, child) {
-                            return Theme(
-                              data: ThemeData.dark(),
-                              child: child!,
-                            );
-                          },
+            return Theme(
+              data: ThemeData.dark(),
+              child: child!,
+            );
+          },
         );
         if (pickedDate != null) {
           setState(() {
@@ -221,58 +213,59 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
   }
 
   Widget _buildApplicationTypeField() {
-  return TextField(
-    controller: _applicationTypeController,
-    style: const TextStyle(color: Colors.white),
-    readOnly: true,
-    decoration: InputDecoration(
-      labelText: 'Jenis Permohonan',
-      labelStyle: const TextStyle(color: Colors.white),
-      hintText: 'Pilih Jenis Permohonan',
-      hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-      filled: true,
-      fillColor: Colors.black87,
-      enabledBorder: const OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.white),
-      ),
-      focusedBorder: const OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.blueAccent), // Warna biru saat fokus
-      ),
-    ),
-    onTap: () {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: Colors.black87, // Tema gelap
-          title: const Text(
-            'Pilih Jenis Permohonan',
-            style: TextStyle(color: Colors.white), // Warna teks putih
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: ['Pasang Baru', 'Perubahan Daya', 'PFK', 'Lainnya']
-                .map(
-                  (type) => ListTile(
-                    title: Text(
-                      type,
-                      style: const TextStyle(color: Colors.white), // Warna teks putih
-                    ),
-                    onTap: () {
-                      setState(() {
-                        _selectedApplicationType = type;
-                        _applicationTypeController.text = type;
-                      });
-                      Navigator.pop(context);
-                    },
-                  ),
-                )
-                .toList(),
-          ),
+    return TextField(
+      controller: _applicationTypeController,
+      style: const TextStyle(color: Colors.white),
+      readOnly: true,
+      decoration: InputDecoration(
+        labelText: 'Jenis Permohonan',
+        labelStyle: const TextStyle(color: Colors.white),
+        hintText: 'Pilih Jenis Permohonan',
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+        filled: true,
+        fillColor: Colors.black87,
+        enabledBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.white),
         ),
-      );
-    },
-  );
-}
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.blueAccent),
+        ),
+      ),
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: Colors.black87,
+            title: const Text(
+              'Pilih Jenis Permohonan',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: ['Pasang Baru', 'Perubahan Daya', 'PFK', 'Lainnya']
+                  .map(
+                    (type) => ListTile(
+                      title: Text(
+                        type,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          _selectedApplicationType = type;
+                          _applicationTypeController.text = type;
+                        });
+                        Navigator.pop(context);
+                      },
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _saveData() {
     final newPermohonan = {
       'name': _nameController.text,
@@ -280,7 +273,6 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
       'address': _addressController.text,
       'date': _dateController.text,
       'applicationType': _applicationTypeController.text,
-      'notes': _notesController.text,
     };
 
     widget.onPermohonanAdded(newPermohonan);
@@ -296,7 +288,6 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
     _addressController.clear();
     _dateController.text = 'Belum dipilih';
     _applicationTypeController.text = 'Belum dipilih';
-    _notesController.clear();
   }
 
   void _showSuccessMessage() {
@@ -308,7 +299,7 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.green,
-        duration: const Duration(seconds: 1),
+        duration: Duration(seconds: 1),
       ),
     );
   }
