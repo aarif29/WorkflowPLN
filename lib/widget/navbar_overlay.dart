@@ -1,86 +1,101 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
 import '../dashboard.dart';
 import '../permohonan_baru.dart';
 import '../antrian.dart';
 import '../selesai.dart';
-import '../antrian_provider.dart';
+import '../antrian_controller.dart';
 
-class BerandaScreen extends ConsumerStatefulWidget {
+class BerandaScreen extends StatelessWidget {
   const BerandaScreen({super.key});
 
   @override
-  BerandaScreenState createState() => BerandaScreenState();
-}
-
-class BerandaScreenState extends ConsumerState<BerandaScreen> {
-  int _selectedIndex = 0;
-  final PageController _pageController = PageController();
-
-  void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
-    _pageController.jumpToPage(index);
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final controller = Get.put(AntrianController());
+    final pageController = PageController();
+    final RxInt selectedIndex = 0.obs;
+
+    const navItems = [
+      BottomNavigationBarItem(
+        icon: Icon(Icons.dashboard_rounded),
+        label: 'Dashboard',
+        backgroundColor: Colors.black87,
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.add_box_rounded),
+        label: 'Permohonan Baru',
+        backgroundColor: Colors.black87,
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.checklist_rounded),
+        label: 'Antrian',
+        backgroundColor: Colors.black87,
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.check_circle_rounded),
+        label: 'Selesai',
+        backgroundColor: Colors.black87,
+      ),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.update),
+        label: 'Update',
+        backgroundColor: Colors.black87,
+      ),
+    ];
+
     return Scaffold(
-      body: Column(
+      body: PageView(
+        controller: pageController,
+        onPageChanged: (index) => selectedIndex.value = index,
         children: [
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              onPageChanged: (index) => setState(() => _selectedIndex = index),
-              children: [
-                DashboardScreen(),
-                PermohonanBaruScreen(
-                  onPermohonanAdded: (newPermohonan) {
-                    // Tambahkan data ke antrianProvider
-                    ref.read(antrianProvider.notifier).addToSurveyQueue(newPermohonan);
-                  },
-                  onNavigateToAntrian: () => _pageController.jumpToPage(2),
+          const DashboardScreen(),
+          PermohonanBaruScreen(
+            onPermohonanAdded: (newPermohonan) {
+              controller.addPermohonan(newPermohonan);
+              Get.snackbar(
+                'Sukses',
+                'Permohonan berhasil ditambahkan',
+                backgroundColor: Colors.green,
+                colorText: Colors.white,
+                snackPosition: SnackPosition.BOTTOM,
+                duration: const Duration(seconds: 1),
+                titleText: const Text(
+                  'Sukses',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                AntrianScreen(),
-                SelesaiScreen(),
-                Container(color: Colors.green),
-              ],
-            ),
+                messageText: const Text(
+                  'Permohonan berhasil ditambahkan',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
+                ),
+              );
+            },
+            onNavigateToAntrian: () => pageController.jumpToPage(2),
           ),
-          _buildBottomNavBar(),
+          const AntrianScreen(),
+          SelesaiScreen(),
+          Container(color: Colors.green),
         ],
       ),
-    );
-  }
-
-  Widget _buildBottomNavBar() {
-    return BottomNavigationBar(
-      currentIndex: _selectedIndex,
-      onTap: _onItemTapped,
-      selectedItemColor: const Color.fromARGB(255, 0, 106, 255),
-      unselectedItemColor: Colors.white,
-      showUnselectedLabels: true,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard_rounded),
-          label: 'Dashboard',
+      bottomNavigationBar: Obx(
+        () => BottomNavigationBar(
+          currentIndex: selectedIndex.value,
+          onTap: (index) {
+            selectedIndex.value = index;
+            pageController.jumpToPage(index);
+          },
+          selectedItemColor: const Color.fromARGB(255, 0, 106, 255),
+          unselectedItemColor: Colors.white,
+          showUnselectedLabels: true,
+          items: navItems,
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.add_box_rounded),
-          label: 'Permohonan Baru',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.checklist_rounded),
-          label: 'Antrian',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.check_circle_rounded),
-          label: 'Selesai',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.update),
-          label: 'Update',
-        ),
-      ],
+      ),
     );
   }
 }
