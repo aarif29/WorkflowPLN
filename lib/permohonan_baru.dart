@@ -275,32 +275,25 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
       'applicationType': _applicationTypeController.text,
     };
 
+    // Panggil callback untuk menambahkan permohonan baru
     widget.onPermohonanAdded(newPermohonan);
 
+    // Bersihkan input fields
     _clearControllers();
-    _showSuccessMessage();
+    
+    // Tutup bottom sheet
     Navigator.pop(context);
+    
+    // Navigasi ke halaman antrian setelah data disimpan
+    // Ini menggantikan fungsi _showSuccessMessage()
+    widget.onNavigateToAntrian();
   }
 
   void _clearControllers() {
     _nameController.clear();
     _phoneController.clear();
     _addressController.clear();
-    _dateController.text = 'Belum dipilih';
-    _applicationTypeController.text = 'Belum dipilih';
-  }
-
-  void _showSuccessMessage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Data berhasil disimpan!',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 1),
-      ),
-    );
+    _dateController.clear();
+    _applicationTypeController.clear();
   }
 }
