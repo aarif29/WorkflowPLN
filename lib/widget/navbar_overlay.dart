@@ -1,28 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../dashboard.dart';
 import '../permohonan_baru.dart';
 import '../antrian.dart';
-import '../selesai.dart'; // Import halaman Selesai
+import '../selesai.dart';
+import '../antrian_provider.dart'; // Pastikan Anda mengimpor provider
 
-class BerandaScreen extends StatefulWidget {
+class BerandaScreen extends ConsumerStatefulWidget {
   const BerandaScreen({super.key});
 
   @override
   BerandaScreenState createState() => BerandaScreenState();
 }
 
-class BerandaScreenState extends State<BerandaScreen> {
+class BerandaScreenState extends ConsumerState<BerandaScreen> {
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
-  final List<Map<String, String?>> _permohonanList = [];
 
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
     _pageController.jumpToPage(index);
-  }
-
-  void _addPermohonan(Map<String, String?> newPermohonan) {
-    setState(() => _permohonanList.add(newPermohonan));
   }
 
   @override
@@ -35,13 +32,16 @@ class BerandaScreenState extends State<BerandaScreen> {
               controller: _pageController,
               onPageChanged: (index) => setState(() => _selectedIndex = index),
               children: [
-                DashboardScreen(),
+                DashboardScreen(), // Hapus const
                 PermohonanBaruScreen(
-                  onPermohonanAdded: _addPermohonan,
+                  onPermohonanAdded: (newPermohonan) {
+                    // Tambahkan data ke antrianProvider
+                    ref.read(antrianProvider.notifier).addToSurveyQueue(newPermohonan);
+                  },
                   onNavigateToAntrian: () => _pageController.jumpToPage(2),
                 ),
-                AntrianScreen(permohonanList: _permohonanList),
-                SelesaiScreen(), // Tambahkan halaman Selesai
+                AntrianScreen(), // Hapus const
+                SelesaiScreen(), // Hapus const
                 Container(color: Colors.green), // Halaman Update
               ],
             ),
