@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'antrian_provider.dart';
+import 'antrian_controller.dart';
 
-class AntrianScreen extends ConsumerWidget {
-  const AntrianScreen({super.key});
+class AntrianScreen extends StatelessWidget {
+  const AntrianScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final antrian = ref.watch(antrianProvider);
+  Widget build(BuildContext context) {
+    final controller = Get.put(AntrianController());
 
     return Scaffold(
       appBar: AppBar(
@@ -19,36 +19,13 @@ class AntrianScreen extends ConsumerWidget {
       ),
       body: Container(
         color: Colors.black87,
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(12.0),
+        child: SingleChildScrollView(
           child: Column(
             children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _buildQueueCard(
-                        'Antrian Survey',
-                        antrian.surveyQueue,
-                        'survey',
-                        ref,
-                      ),
-                      _buildQueueCard(
-                        'Antrian RAB',
-                        antrian.rabQueue,
-                        'rab',
-                        ref,
-                      ),
-                      _buildQueueCard(
-                        'Antrian AMS',
-                        antrian.amsQueue,
-                        'ams',
-                        ref,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              Obx(() => _buildQueueCard('Antrian Survey', controller.surveyQueue, 'survey', controller)),
+              Obx(() => _buildQueueCard('Antrian RAB', controller.rabQueue, 'rab', controller)),
+              Obx(() => _buildQueueCard('Antrian AMS', controller.amsQueue, 'ams', controller)),
             ],
           ),
         ),
@@ -58,9 +35,9 @@ class AntrianScreen extends ConsumerWidget {
 
   Widget _buildQueueCard(
     String title,
-    List<Map<String, String?>> queue,
+    RxList<Map<String, String?>> queue,
     String queueType,
-    WidgetRef ref,
+    AntrianController controller,
   ) {
     return Card(
       color: Colors.grey[900],
@@ -76,115 +53,77 @@ class AntrianScreen extends ConsumerWidget {
                 color: Colors.white,
                 fontSize: 18.0,
                 fontWeight: FontWeight.bold,
-                shadows: [
-                  Shadow(
-                    color: _getQueueColor(queueType),
-                    offset: const Offset(1.0, 1.0),
-                    blurRadius: 3.0,
-                  ),
-                ],
+                shadows: [Shadow(color: _getQueueColor(queueType), offset: const Offset(1.0, 1.0), blurRadius: 3.0)],
               ),
             ),
             const SizedBox(height: 8),
             queue.isEmpty
                 ? const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  child: Center(
-                    child: Text(
-                      'Tidak ada data',
-                      style: TextStyle(color: Colors.white54),
-                    ),
-                  ),
-                )
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: Center(child: Text('Tidak ada data', style: TextStyle(color: Colors.white54))),
+                  )
                 : ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: queue.length,
-                  itemBuilder: (context, index) {
-                    final permohonan = queue[index];
-                    return Container(
-                      margin: const EdgeInsets.symmetric(vertical: 4.0),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: _getQueueColor(queueType),
-                          width: 1.0,
-                        ),
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: _getQueueColor(queueType),
-                          child: Text(
-                            '${index + 1}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        title: Text(
-                          permohonan['name'] ?? 'No Name',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (permohonan['dateSurvey'] != null)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 1.0,
-                                  bottom: 1.0,
-                                ),
-                                child: Text(
-                                  'Survey: ${DateFormat('d MMMM y', 'id').format(DateTime.parse(permohonan['dateSurvey']!))}',
-                                  style: TextStyle(
-                                    color: _getQueueColor(queueType),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            if (permohonan['rabCompletionDate'] != null &&
-                                queueType == 'ams')
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 1.0,
-                                ),
-                                child: Text(
-                                  'Selesai RAB: ${DateFormat('d MMMM y', 'id').format(DateTime.parse(permohonan['rabCompletionDate']!))}',
-                                  style: TextStyle(
-                                    color: _getQueueColor(queueType),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            if (permohonan['keterangan'] != null &&
-                                permohonan['keterangan']?.isNotEmpty == true &&
-                                queueType == 'ams')
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 1.0,
-                                  bottom: 1.0,
-                                ),
-                                child: Text(
-                                  'Catatan RAB: ${permohonan['keterangan']}',
-                                  style: TextStyle(
-                                    color: _getQueueColor(queueType),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        onTap: () => _showDetailDialog(
-                          context,
-                          permohonan,
-                          index,
-                          queueType,
-                          ref,
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: queue.length,
+                    itemBuilder: (context, index) {
+                      final permohonan = queue[index];
+                      return _buildListItem(context, permohonan, index, queueType, controller);
+                    },
+                  ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildListItem(
+    BuildContext context,
+    Map<String, String?> permohonan,
+    int index,
+    String queueType,
+    AntrianController controller,
+  ) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      decoration: BoxDecoration(
+        border: Border.all(color: _getQueueColor(queueType), width: 1.0),
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: _getQueueColor(queueType),
+          child: Text('${index + 1}', style: const TextStyle(color: Colors.white)),
+        ),
+        title: Text(permohonan['name'] ?? 'No Name', style: const TextStyle(color: Colors.white)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (permohonan['dateSurvey'] != null)
+              _buildSubtitleText(
+                'Survey: ${DateFormat('d MMMM y', 'id').format(DateTime.parse(permohonan['dateSurvey']!))}',
+                queueType,
+              ),
+            if (permohonan['rabCompletionDate'] != null && queueType == 'ams')
+              _buildSubtitleText(
+                'Selesai RAB: ${DateFormat('d MMMM y', 'id').format(DateTime.parse(permohonan['rabCompletionDate']!))}',
+                queueType,
+              ),
+            if (permohonan['keterangan'] != null && permohonan['keterangan']?.isNotEmpty == true && queueType == 'ams')
+              _buildSubtitleText('Catatan RAB: ${permohonan['keterangan']}', queueType),
+          ],
+        ),
+        onTap: () => _showDetailDialog(context, permohonan, index, queueType, controller),
+      ),
+    );
+  }
+
+  Widget _buildSubtitleText(String text, String queueType) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 1.0, bottom: 1.0),
+      child: Text(
+        text,
+        style: TextStyle(color: _getQueueColor(queueType), fontSize: 12),
       ),
     );
   }
@@ -194,522 +133,446 @@ class AntrianScreen extends ConsumerWidget {
     Map<String, String?> permohonan,
     int index,
     String queueType,
-    WidgetRef ref,
+    AntrianController controller,
   ) {
-    DateTime? selectedDate;
-    DateTime? selectedRabCompletionDate;
-    final _formKey = GlobalKey<FormState>();
-    String? name = permohonan['name'];
-    String? phone = permohonan['phone'];
-    String? address = permohonan['address'];
-    String? applicationType = permohonan['applicationType'];
-    String? notes = permohonan['notes'];
-    String? dateSurvey = permohonan['dateSurvey'];
-    String? keterangan = permohonan['keterangan'];
-    String? rabCompletionDate = permohonan['rabCompletionDate'];
+    final name = RxString(permohonan['name'] ?? '');
+    final phone = RxString(permohonan['phone'] ?? '');
+    final address = RxString(permohonan['address'] ?? '');
+    final applicationType = RxString(permohonan['applicationType'] ?? '');
+    final notes = RxString(permohonan['notes'] ?? '');
+    final dateSurvey = RxString(permohonan['dateSurvey'] ?? '');
+    final keterangan = RxString(permohonan['keterangan'] ?? '');
+    final rabCompletionDate = RxString(permohonan['rabCompletionDate'] ?? '');
+    
+    final selectedDate = Rx<DateTime?>(null);
+    final selectedRabCompletionDate = Rx<DateTime?>(null);
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              backgroundColor: Colors.black87,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.0),
-                side: BorderSide(color: _getQueueColor(queueType), width: 2.0),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Form(
-                  key: _formKey,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Detail Permohonan',
-                          style: TextStyle(
-                            color: _getQueueColor(queueType),
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          initialValue: name,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            labelText: 'Nama',
-                            labelStyle: const TextStyle(color: Colors.white),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: _getQueueColor(queueType),
-                              ),
-                            ),
-                          ),
-                          onChanged: (value) => name = value,
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          initialValue: phone,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            labelText: 'Nomor HP',
-                            labelStyle: const TextStyle(color: Colors.white),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: _getQueueColor(queueType),
-                              ),
-                            ),
-                          ),
-                          onChanged: (value) => phone = value,
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          initialValue: address,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            labelText: 'Alamat',
-                            labelStyle: const TextStyle(color: Colors.white),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: _getQueueColor(queueType),
-                              ),
-                            ),
-                          ),
-                          onChanged: (value) => address = value,
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          initialValue: applicationType,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            labelText: 'Jenis Permohonan',
-                            labelStyle: const TextStyle(color: Colors.white),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: _getQueueColor(queueType),
-                              ),
-                            ),
-                          ),
-                          onChanged: (value) => applicationType = value,
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          initialValue: notes,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            labelText: 'Catatan Survey',
-                            labelStyle: const TextStyle(color: Colors.white),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: _getQueueColor(queueType),
-                              ),
-                            ),
-                          ),
-                          onChanged: (value) => notes = value,
-                        ),
-                        const SizedBox(height: 8),
-                        if (queueType == 'survey') ...[
-                          ElevatedButton(
-                            onPressed: () async {
-                              final DateTime? pickedDate = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime.now(),
-                                lastDate: DateTime(2100),
-                                builder: (context, child) {
-                                  return Theme(
-                                    data: ThemeData.dark().copyWith(
-                                      colorScheme: const ColorScheme.dark(
-                                        primary: Colors.blueAccent,
-                                        onPrimary: Colors.white,
-                                        surface: Colors.black,
-                                        onSurface: Colors.white,
-                                      ),
-                                    ),
-                                    child: child!,
-                                  );
-                                },
-                              );
-                              if (pickedDate != null) {
-                                setState(() {
-                                  selectedDate = pickedDate;
-                                  dateSurvey = pickedDate.toString();
-                                });
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueAccent,
-                            ),
-                            child: const Text(
-                              'Set Tanggal Survey',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          if (selectedDate != null)
-                            Text(
-                              'Tanggal Survey: ${DateFormat('d MMMM y', 'id').format(selectedDate!)}',
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  ref
-                                      .read(antrianProvider.notifier)
-                                      .updatePermohonan(index, {
-                                        'name': name,
-                                        'phone': phone,
-                                        'address': address,
-                                        'applicationType': applicationType,
-                                        'notes': notes,
-                                        'dateSurvey': dateSurvey,
-                                        'keterangan': keterangan,
-                                      }, queueType);
-                                  Navigator.pop(context);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                ),
-                                child: const Text(
-                                  'Simpan',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  ref
-                                      .read(antrianProvider.notifier)
-                                      .deleteFromQueue(index, queueType);
-                                  Navigator.pop(context);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                ),
-                                child: const Text(
-                                  'Hapus',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (dateSurvey != null) ...[
-                            const SizedBox(height: 8),
-                            ElevatedButton(
-                              onPressed: () {
-                                ref
-                                    .read(antrianProvider.notifier)
-                                    .updatePermohonan(index, {
-                                      'name': name,
-                                      'phone': phone,
-                                      'address': address,
-                                      'applicationType': applicationType,
-                                      'notes': notes,
-                                      'dateSurvey': dateSurvey,
-                                      'keterangan': keterangan,
-                                    }, queueType);
-                                ref
-                                    .read(antrianProvider.notifier)
-                                    .moveToRabQueue(index);
-                                Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Center(
-                                      child: Text(
-                                        'Permohonan dipindahkan ke Antrian RAB',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-                                    backgroundColor: Colors.orange,
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange,
-                              ),
-                              child: const Text(
-                                'Selesai Survey',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ],
-                        if (queueType == 'rab') ...[
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            initialValue: keterangan,
-                            style: const TextStyle(color: Colors.white),
-                            maxLines: 3,
-                            decoration: InputDecoration(
-                              labelText: 'Keterangan RAB',
-                              labelStyle: const TextStyle(color: Colors.white),
-                              border: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: _getQueueColor(queueType),
-                                ),
-                              ),
-                            ),
-                            onChanged: (value) => keterangan = value,
-                          ),
-                          const SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: () async {
-                              final DateTime? pickedDate = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime.now(),
-                                lastDate: DateTime(2100),
-                                builder: (context, child) {
-                                  return Theme(
-                                    data: ThemeData.dark().copyWith(
-                                      colorScheme: const ColorScheme.dark(
-                                        primary: Colors.orangeAccent,
-                                        onPrimary: Colors.white,
-                                        surface: Colors.black,
-                                        onSurface: Colors.white,
-                                      ),
-                                    ),
-                                    child: child!,
-                                  );
-                                },
-                              );
-                              if (pickedDate != null) {
-                                setState(() {
-                                  selectedRabCompletionDate = pickedDate;
-                                });
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orangeAccent,
-                            ),
-                            child: const Text(
-                              'Tanggal selesai RAB',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                          if (selectedRabCompletionDate != null) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              'Tanggal Selesai: ${DateFormat('d MMMM y', 'id').format(selectedRabCompletionDate!)}',
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          ],
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  ref
-                                      .read(antrianProvider.notifier)
-                                      .updatePermohonan(index, {
-                                        'name': name,
-                                        'phone': phone,
-                                        'address': address,
-                                        'applicationType': applicationType,
-                                        'notes': notes,
-                                        'dateSurvey': dateSurvey,
-                                        'keterangan': keterangan,
-                                      }, queueType);
-                                  Navigator.pop(context);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                ),
-                                child: const Text(
-                                  'Simpan',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  ref
-                                      .read(antrianProvider.notifier)
-                                      .deleteFromQueue(index, queueType);
-                                  Navigator.pop(context);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                ),
-                                child: const Text(
-                                  'Hapus',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          if (selectedRabCompletionDate != null)
-                            ElevatedButton(
-                              onPressed: () {
-                                ref
-                                    .read(antrianProvider.notifier)
-                                    .updatePermohonan(index, {
-                                      'name': name,
-                                      'phone': phone,
-                                      'address': address,
-                                      'applicationType': applicationType,
-                                      'notes': notes,
-                                      'dateSurvey': dateSurvey,
-                                      'keterangan': keterangan,
-                                      'status': 'completed',
-                                      'rabCompletionDate':
-                                          selectedRabCompletionDate.toString(),
-                                    }, queueType);
-                                ref
-                                    .read(antrianProvider.notifier)
-                                    .moveToAmsQueue(index);
-                                Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Center(
-                                      child: Text(
-                                        'Permohonan dipindahkan ke Antrian AMS',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-                                    backgroundColor: Colors.green,
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                              ),
-                              child: const Text(
-                                'Selesai RAB',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                        ],
-                        if (queueType == 'ams') ...[
-                          if (rabCompletionDate != null) ...[
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.all(10.0),
-                              decoration: BoxDecoration(
-                                color: Colors.black54,
-                                border: Border.all(
-                                  color: _getQueueColor(queueType),
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.calendar_today,
-                                    color: _getQueueColor(queueType),
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      'Selesai RAB: ${DateFormat('d MMMM y', 'id').format(DateTime.parse(rabCompletionDate))}',
-                                      style: TextStyle(
-                                        color: _getQueueColor(queueType),
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                          if (keterangan != null &&
-                              keterangan?.isNotEmpty == true) ...[
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.all(10.0),
-                              decoration: BoxDecoration(
-                                color: Colors.black54,
-                                border: Border.all(
-                                  color: _getQueueColor(queueType),
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.note_alt,
-                                        color: _getQueueColor(queueType),
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Catatan RAB:',
-                                        style: TextStyle(
-                                          color: _getQueueColor(queueType),
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    keterangan ?? '',
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 20),
-                          Center(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                ref
-                                    .read(antrianProvider.notifier)
-                                    .deleteFromQueue(index, queueType);
-                                Navigator.pop(context);
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 12,
-                                ),
-                              ),
-                              child: const Text(
-                                'Hapus',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.black87,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+          side: BorderSide(color: _getQueueColor(queueType), width: 2.0),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Detail Permohonan',
+                  style: TextStyle(
+                    color: _getQueueColor(queueType),
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-            );
-          },
-        );
-      },
+                const SizedBox(height: 16),
+                _buildTextField('Nama', name),
+                _buildTextField('Nomor HP', phone),
+                _buildTextField('Alamat', address),
+                _buildTextField('Jenis Permohonan', applicationType),
+                _buildTextField('Catatan', notes),
+                if (queueType == 'survey') ...[
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2100),
+                        builder: (context, child) => Theme(
+                          data: ThemeData.dark().copyWith(
+                            colorScheme: const ColorScheme.dark(
+                              primary: Colors.blueAccent,
+                              onPrimary: Colors.white,
+                              surface: Colors.black,
+                              onSurface: Colors.white,
+                            ),
+                          ),
+                          child: child!,
+                        ),
+                      );
+                      if (pickedDate != null) {
+                        selectedDate.value = pickedDate;
+                        dateSurvey.value = pickedDate.toString();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+                    child: const Text('Set Tanggal Survey', style: TextStyle(color: Colors.white)),
+                  ),
+                  Obx(() => selectedDate.value != null
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            'Tanggal Survey: ${DateFormat('d MMMM y', 'id').format(selectedDate.value!)}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        )
+                      : const SizedBox.shrink()),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildActionButton(
+                        'Simpan',
+                        Colors.green,
+                        () => _updateAndClose(controller, index, queueType, {
+                          'name': name.value,
+                          'phone': phone.value,
+                          'address': address.value,
+                          'applicationType': applicationType.value,
+                          'notes': notes.value,
+                          'dateSurvey': dateSurvey.value,
+                          'keterangan': keterangan.value,
+                        }),
+                      ),
+                      _buildActionButton(
+                        'Hapus',
+                        Colors.red,
+                        () => _showDeleteConfirmation(context, controller, index, queueType),
+                      ),
+                    ],
+                  ),
+                  if (dateSurvey.value.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: _buildActionButton(
+                        'Selesai Survey',
+                        Colors.orange,
+                        () {
+                          _updateAndClose(controller, index, queueType, {
+                            'name': name.value,
+                            'phone': phone.value,
+                            'address': address.value,
+                            'applicationType': applicationType.value,
+                            'notes': notes.value,
+                            'dateSurvey': dateSurvey.value,
+                            'keterangan': keterangan.value,
+                          });
+                          controller.moveToRabQueue(index);
+                          Get.snackbar(
+                            'Sukses',
+                            'Permohonan dipindahkan ke Antrian RAB',
+                            backgroundColor: Colors.orange,
+                            colorText: Colors.white,
+                            snackPosition: SnackPosition.BOTTOM,
+                            duration: const Duration(seconds: 1),
+                            titleText: const Text(
+                              'Sukses',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            messageText: const Text(
+                              'Permohonan dipindahkan ke Antrian RAB',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          );
+                        },
+                        fullWidth: true,
+                      ),
+                    ),
+                ],
+                if (queueType == 'rab') ...[
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: TextEditingController(text: keterangan.value),
+                    style: const TextStyle(color: Colors.white),
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      labelText: 'Keterangan RAB',
+                      labelStyle: const TextStyle(color: Colors.white),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: _getQueueColor(queueType)),
+                      ),
+                    ),
+                    onChanged: (value) => keterangan.value = value,
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2100),
+                        builder: (context, child) => Theme(
+                          data: ThemeData.dark().copyWith(
+                            colorScheme: const ColorScheme.dark(
+                              primary: Colors.orangeAccent,
+                              onPrimary: Colors.white,
+                              surface: Colors.black,
+                              onSurface: Colors.white,
+                            ),
+                          ),
+                          child: child!,
+                        ),
+                      );
+                      if (pickedDate != null) {
+                        selectedRabCompletionDate.value = pickedDate;
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.orangeAccent),
+                    child: const Text('Tanggal selesai RAB', style: TextStyle(color: Colors.white)),
+                  ),
+                  Obx(() => selectedRabCompletionDate.value != null
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            'Tanggal Selesai: ${DateFormat('d MMMM y', 'id').format(selectedRabCompletionDate.value!)}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        )
+                      : const SizedBox.shrink()),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildActionButton(
+                        'Simpan',
+                        Colors.green,
+                        () => _updateAndClose(controller, index, queueType, {
+                          'name': name.value,
+                          'phone': phone.value,
+                          'address': address.value,
+                          'applicationType': applicationType.value,
+                          'notes': notes.value,
+                          'dateSurvey': dateSurvey.value,
+                          'keterangan': keterangan.value,
+                        }),
+                      ),
+                      _buildActionButton(
+                        'Hapus',
+                        Colors.red,
+                        () => _showDeleteConfirmation(context, controller, index, queueType),
+                      ),
+                    ],
+                  ),
+                  if (selectedRabCompletionDate.value != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: _buildActionButton(
+                        'Selesai RAB',
+                        Colors.green,
+                        () {
+                          _updateAndClose(controller, index, queueType, {
+                            'name': name.value,
+                            'phone': phone.value,
+                            'address': address.value,
+                            'applicationType': applicationType.value,
+                            'notes': notes.value,
+                            'dateSurvey': dateSurvey.value,
+                            'keterangan': keterangan.value,
+                            'status': 'completed',
+                            'rabCompletionDate': selectedRabCompletionDate.value.toString(),
+                          });
+                          controller.moveToAmsQueue(index);
+                          Get.snackbar(
+                            'Sukses',
+                            'Permohonan dipindahkan ke Antrian AMS',
+                            backgroundColor: Colors.green,
+                            colorText: Colors.white,
+                            snackPosition: SnackPosition.BOTTOM,
+                            duration: const Duration(seconds: 1),
+                            titleText: const Text(
+                              'Sukses',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            messageText: const Text(
+                              'Permohonan dipindahkan ke Antrian AMS',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          );
+                        },
+                        fullWidth: true,
+                      ),
+                    ),
+                ],
+                if (queueType == 'ams') ...[
+                  if (rabCompletionDate.value.isNotEmpty)
+                    _buildInfoContainer(
+                      Icons.calendar_today,
+                      'Selesai RAB: ${DateFormat('d MMMM y', 'id').format(DateTime.parse(rabCompletionDate.value))}',
+                      queueType,
+                    ),
+                  if (keterangan.value.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          border: Border.all(color: _getQueueColor(queueType), width: 1.0),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.note_alt, color: _getQueueColor(queueType), size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Catatan RAB:',
+                                  style: TextStyle(color: _getQueueColor(queueType), fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(keterangan.value, style: const TextStyle(color: Colors.white)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: _buildActionButton(
+                      'Hapus',
+                      Colors.red,
+                      () => _showDeleteConfirmation(context, controller, index, queueType),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
     );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, AntrianController controller, int index, String queueType) {
+  Get.dialog(
+    AlertDialog(
+      backgroundColor: Colors.black87,
+      title: const Text(
+        'Konfirmasi Hapus',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+      content: const Text(
+        'Apakah Anda yakin ingin menghapus permohonan ini?',
+        style: TextStyle(color: Colors.white),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Get.back(),
+          child: const Text('Tidak', style: TextStyle(color: Colors.blueAccent)),
+        ),
+        TextButton(
+          onPressed: () {
+            // Tutup dialog konfirmasi terlebih dahulu
+            Get.back();
+            
+            // Hapus data dari antrian
+            controller.deleteFromQueue(index, queueType);
+            
+            // Tutup dialog detail
+            Get.back();
+            
+            // Tampilkan snackbar setelah semua dialog ditutup
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Get.snackbar(
+                '',
+                '',
+                backgroundColor: Colors.red,
+                colorText: Colors.white,
+                snackPosition: SnackPosition.BOTTOM,
+                duration: const Duration(seconds: 2),
+                titleText: const Text(
+                  'Sukses',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                messageText: const Text(
+                  'Permohonan berhasil dihapus',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              );
+            });
+          },
+          child: const Text('Ya', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ),
+  );
+}
+
+  Widget _buildTextField(String label, RxString value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: TextField(
+        controller: TextEditingController(text: value.value),
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white),
+          border: const OutlineInputBorder(),
+        ),
+        onChanged: (newValue) => value.value = newValue,
+      ),
+    );
+  }
+
+  Widget _buildActionButton(String text, Color color, VoidCallback onPressed, {bool fullWidth = false, EdgeInsets? padding}) {
+    return SizedBox(
+      width: fullWidth ? double.infinity : null,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          padding: padding,
+        ),
+        child: Text(text, style: const TextStyle(color: Colors.white)),
+      ),
+    );
+  }
+
+  Widget _buildInfoContainer(IconData icon, String text, String queueType) {
+    return Container(
+      padding: const EdgeInsets.all(10.0),
+      decoration: BoxDecoration(
+        color: Colors.black54,
+        border: Border.all(color: _getQueueColor(queueType), width: 1.0),
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: _getQueueColor(queueType), size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(color: _getQueueColor(queueType), fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _updateAndClose(AntrianController controller, int index, String queueType, Map<String, String?> data) {
+    controller.updatePermohonan(index, data, queueType);
+    Get.back();
+  }
+
+  void _deleteAndClose(AntrianController controller, int index, String queueType) {
+    controller.deleteFromQueue(index, queueType);
   }
 
   Color _getQueueColor(String queueType) {
     switch (queueType) {
-      case 'survey':
-        return Colors.blueAccent;
-      case 'rab':
-        return Colors.orangeAccent;
-      case 'ams':
-        return Colors.greenAccent;
-      default:
-        return Colors.white;
+      case 'survey': return Colors.blueAccent;
+      case 'rab': return Colors.orangeAccent;
+      case 'ams': return Colors.greenAccent;
+      default: return Colors.white;
     }
   }
 }
