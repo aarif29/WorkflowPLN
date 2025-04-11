@@ -4,7 +4,7 @@ import '../dashboard.dart';
 import '../permohonan_baru.dart';
 import '../antrian.dart';
 import '../selesai.dart';
-import '../antrian_provider.dart'; // Pastikan Anda mengimpor provider
+import '../antrian_provider.dart';
 
 class BerandaScreen extends ConsumerStatefulWidget {
   const BerandaScreen({super.key});
@@ -32,7 +32,7 @@ class BerandaScreenState extends ConsumerState<BerandaScreen> {
               controller: _pageController,
               onPageChanged: (index) => setState(() => _selectedIndex = index),
               children: [
-                DashboardScreen(), // Hapus const
+                DashboardScreen(),
                 PermohonanBaruScreen(
                   onPermohonanAdded: (newPermohonan) {
                     // Tambahkan data ke antrianProvider
@@ -40,9 +40,9 @@ class BerandaScreenState extends ConsumerState<BerandaScreen> {
                   },
                   onNavigateToAntrian: () => _pageController.jumpToPage(2),
                 ),
-                AntrianScreen(), // Hapus const
-                SelesaiScreen(), // Hapus const
-                Container(color: Colors.green), // Halaman Update
+                AntrianScreen(),
+                SelesaiScreen(),
+                Container(color: Colors.green),
               ],
             ),
           ),
