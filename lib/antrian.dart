@@ -143,12 +143,12 @@ class AntrianScreen extends StatelessWidget {
     final dateSurvey = RxString(permohonan['dateSurvey'] ?? '');
     final keterangan = RxString(permohonan['keterangan'] ?? '');
     final rabCompletionDate = RxString(permohonan['rabCompletionDate'] ?? '');
-    
+
     final selectedDate = Rx<DateTime?>(null);
     final selectedRabCompletionDate = Rx<DateTime?>(null);
 
     Get.dialog(
-      Dialog(
+      Obx(() => Dialog(
         backgroundColor: Colors.black87,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.0),
@@ -204,15 +204,15 @@ class AntrianScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
                     child: const Text('Set Tanggal Survey', style: TextStyle(color: Colors.white)),
                   ),
-                  Obx(() => selectedDate.value != null
-                      ? Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            'Tanggal Survey: ${DateFormat('d MMMM y', 'id').format(selectedDate.value!)}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        )
-                      : const SizedBox.shrink()),
+                  const SizedBox(height: 8),
+                  if (selectedDate.value != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        'Tanggal Survey: ${DateFormat('d MMMM y', 'id').format(selectedDate.value!)}',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -237,6 +237,7 @@ class AntrianScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                  // Tombol "Selesai Survey" akan muncul langsung setelah tanggal dipilih
                   if (dateSurvey.value.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
@@ -319,15 +320,14 @@ class AntrianScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.orangeAccent),
                     child: const Text('Tanggal selesai RAB', style: TextStyle(color: Colors.white)),
                   ),
-                  Obx(() => selectedRabCompletionDate.value != null
-                      ? Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            'Tanggal Selesai: ${DateFormat('d MMMM y', 'id').format(selectedRabCompletionDate.value!)}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        )
-                      : const SizedBox.shrink()),
+                  if (selectedRabCompletionDate.value != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        'Tanggal Selesai: ${DateFormat('d MMMM y', 'id').format(selectedRabCompletionDate.value!)}',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -444,66 +444,59 @@ class AntrianScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
+      )),
     );
   }
 
   void _showDeleteConfirmation(BuildContext context, AntrianController controller, int index, String queueType) {
-  Get.dialog(
-    AlertDialog(
-      backgroundColor: Colors.black87,
-      title: const Text(
-        'Konfirmasi Hapus',
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      ),
-      content: const Text(
-        'Apakah Anda yakin ingin menghapus permohonan ini?',
-        style: TextStyle(color: Colors.white),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Get.back(),
-          child: const Text('Tidak', style: TextStyle(color: Colors.blueAccent)),
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: Colors.black87,
+        title: const Text(
+          'Konfirmasi Hapus',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        TextButton(
-          onPressed: () {
-            // Tutup dialog konfirmasi terlebih dahulu
-            Get.back();
-            
-            // Hapus data dari antrian
-            controller.deleteFromQueue(index, queueType);
-            
-            // Tutup dialog detail
-            Get.back();
-            
-            // Tampilkan snackbar setelah semua dialog ditutup
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              Get.snackbar(
-                '',
-                '',
-                backgroundColor: Colors.red,
-                colorText: Colors.white,
-                snackPosition: SnackPosition.BOTTOM,
-                duration: const Duration(seconds: 2),
-                titleText: const Text(
-                  'Sukses',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                messageText: const Text(
-                  'Permohonan berhasil dihapus',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
-              );
-            });
-          },
-          child: const Text('Ya', style: TextStyle(color: Colors.red)),
+        content: const Text(
+          'Apakah Anda yakin ingin menghapus permohonan ini?',
+          style: TextStyle(color: Colors.white),
         ),
-      ],
-    ),
-  );
-}
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Tidak', style: TextStyle(color: Colors.blueAccent)),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              controller.deleteFromQueue(index, queueType);
+              Get.back();
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Get.snackbar(
+                  '',
+                  '',
+                  backgroundColor: Colors.red,
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.BOTTOM,
+                  duration: const Duration(seconds: 1),
+                  titleText: const Text(
+                    'Sukses',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  messageText: const Text(
+                    'Permohonan berhasil dihapus',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                );
+              });
+            },
+            child: const Text('Ya', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildTextField(String label, RxString value) {
     return Padding(
@@ -563,16 +556,16 @@ class AntrianScreen extends StatelessWidget {
     Get.back();
   }
 
-  void _deleteAndClose(AntrianController controller, int index, String queueType) {
-    controller.deleteFromQueue(index, queueType);
-  }
-
   Color _getQueueColor(String queueType) {
     switch (queueType) {
-      case 'survey': return Colors.blueAccent;
-      case 'rab': return Colors.orangeAccent;
-      case 'ams': return Colors.greenAccent;
-      default: return Colors.white;
+      case 'survey':
+        return Colors.blueAccent;
+      case 'rab':
+        return Colors.orangeAccent;
+      case 'ams':
+        return Colors.greenAccent;
+      default:
+        return Colors.white;
     }
   }
 }
