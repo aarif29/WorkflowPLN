@@ -4,7 +4,7 @@ import '../dashboard.dart';
 import '../permohonan_baru.dart';
 import '../antrian.dart';
 import '../selesai.dart';
-import '../antrian_controller.dart';
+import '../controller/antrian_controller.dart';
 
 class BerandaScreen extends StatelessWidget {
   const BerandaScreen({super.key});
