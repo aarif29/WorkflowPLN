@@ -1,101 +1,141 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../controller/antrian_controller.dart';
+import '../controller/selesai_controller.dart';
+import '../widget/navbar_overlay.dart'; // Impor BerandaController
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Dashboard',
-          style: TextStyle(
-            color: Colors.white, // Change title color to white
-            fontSize: 24.0, // Increase font size
-            shadows: [
-              Shadow(
-                color: Colors.blue, // Add blue shadow
-                offset: Offset(2.0, 2.0), // Shadow offset
-                blurRadius: 4.0, // Shadow blur radius
+    // Inisialisasi controller
+    final antrianController = Get.put(AntrianController());
+    final selesaiController = Get.put(SelesaiController());
+    final berandaController = Get.find<BerandaController>(); // Akses BerandaController
+
+    return Container(
+      color: Colors.black87,
+      width: double.infinity,
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Judul atau header dashboard
+          const Text(
+            'Ringkasan Workflow',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16.0),
+          // GridView untuk menampilkan statistik
+          Expanded(
+            child: GridView.count(
+              crossAxisCount: 2, // 2 kolom
+              crossAxisSpacing: 16.0,
+              mainAxisSpacing: 16.0,
+              childAspectRatio: 1.2, // Rasio lebar:tinggi untuk card
+              children: [
+                // Card untuk Antrian
+                Obx(() => _buildStatCard(
+                      context: context,
+                      title: 'Antrian',
+                      count: antrianController.surveyQueue.length +
+                          antrianController.rabQueue.length +
+                          antrianController.amsQueue.length,
+                      icon: Icons.hourglass_empty,
+                      iconColor: Colors.yellowAccent,
+                      borderColor: Colors.yellowAccent,
+                      onTap: () {
+                        // Navigasi ke halaman Antrian (indeks 2)
+                        berandaController.changePage(2);
+                      },
+                    )),
+                // Card untuk Proses (RAB + AMS)
+                Obx(() => _buildStatCard(
+                      context: context,
+                      title: 'Proses',
+                      count: antrianController.rabQueue.length +
+                          antrianController.amsQueue.length,
+                      icon: Icons.wifi_protected_setup_rounded,
+                      iconColor: Colors.blueAccent,
+                      borderColor: Colors.blueAccent,
+                      onTap: () {
+                        // Navigasi ke halaman Antrian (indeks 2)
+                        berandaController.changePage(2);
+                      },
+                    )),
+                // Card untuk Selesai
+                Obx(() => _buildStatCard(
+                      context: context,
+                      title: 'Selesai',
+                      count: selesaiController.selesaiList.length,
+                      icon: Icons.check_circle,
+                      iconColor: Colors.greenAccent,
+                      borderColor: Colors.greenAccent,
+                      onTap: () {
+                        // Navigasi ke halaman Selesai (indeks 3)
+                        berandaController.changePage(3);
+                      },
+                    )),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Widget untuk membuat card statistik
+  Widget _buildStatCard({
+    required BuildContext context,
+    required String title,
+    required int count,
+    required IconData icon,
+    required Color iconColor,
+    required Color borderColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        color: Colors.grey[850],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          side: BorderSide(color: borderColor, width: 1.5),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: iconColor,
+                size: 40.0,
+              ),
+              const SizedBox(height: 8.0),
+              Text(
+                '$count',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 32.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4.0),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.0,
+                ),
               ),
             ],
           ),
-        ),
-        backgroundColor: Colors.black87, // Make the AppBar background black
-        iconTheme: IconThemeData(
-          color: Colors.white,
-        ), // Change back button color to white
-        elevation: 0, // Remove shadow
-      ),
-      body: Container(
-        color: Colors.black87, // Set background color to black
-        width: double.infinity, // Ensure full width to eliminate white space
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Removed 'Antrian' button
-            SizedBox(height: 32.0), // Increased spacing between components
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.white,
-                  width: 2,
-                ), // White border
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.8,
-                height: 80.0,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[850],
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                  onPressed: () {},
-                  child: Text(
-                    'Proses',
-                    style: TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 32.0), // Increased spacing between components
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.white,
-                  width: 2,
-                ), // White border
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.8,
-                height: 80.0,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[850],
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                  onPressed: () {},
-                  child: Text(
-                    'Selesai',
-                    style: TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
