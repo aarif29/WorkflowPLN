@@ -6,14 +6,30 @@ import '../antrian.dart';
 import '../selesai.dart';
 import '../controller/antrian_controller.dart';
 
+// Buat controller untuk mengelola navigasi
+class BerandaController extends GetxController {
+  final RxInt selectedIndex = 0.obs;
+  PageController pageController = PageController();
+
+  void changePage(int index) {
+    selectedIndex.value = index;
+    pageController.jumpToPage(index);
+  }
+
+  @override
+  void onClose() {
+    pageController.dispose();
+    super.onClose();
+  }
+}
+
 class BerandaScreen extends StatelessWidget {
   const BerandaScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(AntrianController());
-    final pageController = PageController();
-    final RxInt selectedIndex = 0.obs;
+    final antrianController = Get.put(AntrianController());
+    final berandaController = Get.put(BerandaController());
 
     const navItems = [
       BottomNavigationBarItem(
@@ -45,13 +61,13 @@ class BerandaScreen extends StatelessWidget {
 
     return Scaffold(
       body: PageView(
-        controller: pageController,
-        onPageChanged: (index) => selectedIndex.value = index,
+        controller: berandaController.pageController,
+        onPageChanged: (index) => berandaController.selectedIndex.value = index,
         children: [
           const DashboardScreen(),
           PermohonanBaruScreen(
             onPermohonanAdded: (newPermohonan) {
-              controller.addPermohonan(newPermohonan);
+              antrianController.addPermohonan(newPermohonan);
               Get.snackbar(
                 'Sukses',
                 'Permohonan berhasil ditambahkan',
@@ -76,7 +92,7 @@ class BerandaScreen extends StatelessWidget {
                 ),
               );
             },
-            onNavigateToAntrian: () => pageController.jumpToPage(2),
+            onNavigateToAntrian: () => berandaController.changePage(2),
           ),
           const AntrianScreen(),
           SelesaiScreen(),
@@ -85,10 +101,9 @@ class BerandaScreen extends StatelessWidget {
       ),
       bottomNavigationBar: Obx(
         () => BottomNavigationBar(
-          currentIndex: selectedIndex.value,
+          currentIndex: berandaController.selectedIndex.value,
           onTap: (index) {
-            selectedIndex.value = index;
-            pageController.jumpToPage(index);
+            berandaController.changePage(index);
           },
           selectedItemColor: const Color.fromARGB(255, 0, 106, 255),
           unselectedItemColor: Colors.white,
