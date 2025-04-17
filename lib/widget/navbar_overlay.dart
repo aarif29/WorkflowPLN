@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import '../dashboard.dart';
 import '../permohonan_baru.dart';
 import '../antrian.dart';
 import '../selesai.dart';
 import '../controller/antrian_controller.dart';
+import '../login_screen.dart';
+
+// Inisialisasi GetStorage di aplikasi
+Future<void> initializeStorage() async {
+  await GetStorage.init();
+}
 
 // Buat controller untuk mengelola navigasi
 class BerandaController extends GetxController {
@@ -20,6 +27,78 @@ class BerandaController extends GetxController {
   void onClose() {
     pageController.dispose();
     super.onClose();
+  }
+}
+
+// Halaman Profil
+class ProfilScreen extends StatelessWidget {
+  const ProfilScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black87,
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Foto Profil (Placeholder)
+            const CircleAvatar(
+              radius: 50.0,
+              backgroundColor: Colors.grey,
+              child: Icon(
+                Icons.person,
+                size: 60.0,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            // Nama Pengguna
+            const Text(
+              'John Doe',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8.0),
+            // Otoritas
+            const Text(
+              'Admin',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 18.0,
+              ),
+            ),
+            const SizedBox(height: 32.0),
+            // Tombol Logout
+            ElevatedButton(
+              onPressed: () {
+                print('Tombol Logout ditekan');
+                Get.offAll(() => const LoginScreen());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 12.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              child: const Text(
+                'Logout',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -53,8 +132,8 @@ class BerandaScreen extends StatelessWidget {
         backgroundColor: Colors.black87,
       ),
       BottomNavigationBarItem(
-        icon: Icon(Icons.update),
-        label: 'Update',
+        icon: Icon(Icons.person),
+        label: 'Profil',
         backgroundColor: Colors.black87,
       ),
     ];
@@ -96,7 +175,7 @@ class BerandaScreen extends StatelessWidget {
           ),
           const AntrianScreen(),
           SelesaiScreen(),
-          Container(color: Colors.green),
+          const ProfilScreen(),
         ],
       ),
       bottomNavigationBar: Obx(

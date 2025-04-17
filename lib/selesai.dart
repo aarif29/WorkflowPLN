@@ -42,7 +42,7 @@ class SelesaiScreen extends StatelessWidget {
               controller: searchController,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'Cari permohonan (No. AMS, nama)...', // Ubah hint
+                hintText: 'Cari permohonan (No. AMS, nama)...',
                 hintStyle: const TextStyle(color: Colors.white54),
                 prefixIcon: const Icon(Icons.search, color: Colors.white54),
                 suffixIcon: Obx(() => selesaiController.searchQuery.value.isNotEmpty
@@ -97,18 +97,18 @@ class SelesaiScreen extends StatelessWidget {
                         child: ListTile(
                           leading: const Icon(Icons.check_circle, color: Colors.green),
                           title: Text(
-                            permohonan['nama']!,
+                            permohonan['nama']?.toString() ?? '',
                             style: const TextStyle(color: Colors.white),
                           ),
                           subtitle: Text(
-                            'No. AMS: ${permohonan['id']}', // Ubah ID menjadi No. AMS dan hapus tanggal
+                            'No. AMS: ${permohonan['id']?.toString() ?? ''}',
                             style: TextStyle(color: Colors.grey[300]),
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                permohonan['status']!,
+                                permohonan['status']?.toString() ?? '',
                                 style: const TextStyle(
                                   color: Colors.green,
                                   fontWeight: FontWeight.bold,
@@ -131,7 +131,7 @@ class SelesaiScreen extends StatelessWidget {
     );
   }
 
-  void _showDetailDialog(BuildContext context, Map<String, String> permohonan) {
+  void _showDetailDialog(BuildContext context, Map<String, dynamic> permohonan) {
     Get.dialog(
       Dialog(
         backgroundColor: Colors.black87,
@@ -155,26 +155,26 @@ class SelesaiScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildReadOnlyField('No. AMS', permohonan['id'] ?? ''),
-                _buildReadOnlyField('Nama', permohonan['nama'] ?? ''),
-                _buildReadOnlyField('Nomor HP', permohonan['phone'] ?? ''),
-                _buildReadOnlyField('Alamat', permohonan['address'] ?? ''),
-                _buildReadOnlyField('Jenis Permohonan', permohonan['applicationType'] ?? ''),
-                _buildReadOnlyField('Catatan', permohonan['notes'] ?? ''),
-                if (permohonan['dateSurvey'] != null && permohonan['dateSurvey']!.isNotEmpty)
+                _buildReadOnlyField('No. AMS', permohonan['id']?.toString() ?? ''),
+                _buildReadOnlyField('Nama', permohonan['nama']?.toString() ?? ''),
+                _buildReadOnlyField('Nomor HP', permohonan['phone']?.toString() ?? ''),
+                _buildReadOnlyField('Alamat', permohonan['address']?.toString() ?? ''),
+                _buildReadOnlyField('Jenis Permohonan', permohonan['applicationType']?.toString() ?? ''),
+                _buildReadOnlyField('Catatan', permohonan['notes']?.toString() ?? ''),
+                if (permohonan['dateSurvey'] != null && (permohonan['dateSurvey']?.toString() ?? '').isNotEmpty)
                   _buildReadOnlyField(
                     'Tanggal Survey',
-                    DateFormat('d MMMM y', 'id').format(DateTime.parse(permohonan['dateSurvey']!)),
+                    DateFormat('d MMMM y', 'id').format(DateTime.parse(permohonan['dateSurvey']!.toString())),
                   ),
-                if (permohonan['rabCompletionDate'] != null && permohonan['rabCompletionDate']!.isNotEmpty)
+                if (permohonan['rabCompletionDate'] != null && (permohonan['rabCompletionDate']?.toString() ?? '').isNotEmpty)
                   _buildReadOnlyField(
                     'Tanggal Selesai RAB',
-                    DateFormat('d MMMM y', 'id').format(DateTime.parse(permohonan['rabCompletionDate']!)),
+                    DateFormat('d MMMM y', 'id').format(DateTime.parse(permohonan['rabCompletionDate']!.toString())),
                   ),
-                if (permohonan['keterangan'] != null && permohonan['keterangan']!.isNotEmpty)
+                if (permohonan['keterangan'] != null && (permohonan['keterangan']?.toString() ?? '').isNotEmpty)
                   _buildReadOnlyField(
                     'Catatan RAB',
-                    permohonan['keterangan']!,
+                    permohonan['keterangan']?.toString() ?? '',
                   ),
                 const SizedBox(height: 20),
                 Center(
