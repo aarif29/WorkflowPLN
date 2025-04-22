@@ -36,6 +36,11 @@ class ProfilScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final GetStorage storage = GetStorage();
+    String username = storage.read('username') ?? 'User';
+    String group = storage.read('group') ?? 'Tidak ada grup';
+    String role = storage.read('role') ?? 'Pengguna'; // Ambil peran dari GetStorage
+
     return Container(
       color: Colors.black87,
       padding: const EdgeInsets.all(16.0),
@@ -54,20 +59,29 @@ class ProfilScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16.0),
-            // Nama Pengguna
-            const Text(
-              'John Doe',
-              style: TextStyle(
+            // Nama Pengguna dari GetStorage
+            Text(
+              username,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 24.0,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8.0),
-            // Otoritas
-            const Text(
-              'Admin',
-              style: TextStyle(
+            // Grup
+            Text(
+              'Grup: $group',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 18.0,
+              ),
+            ),
+            const SizedBox(height: 8.0),
+            // Peran (Admin/Surveyor)
+            Text(
+              role,
+              style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 18.0,
               ),
@@ -77,6 +91,9 @@ class ProfilScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 print('Tombol Logout ditekan');
+                storage.remove('username');
+                storage.remove('group');
+                storage.remove('role'); // Hapus informasi peran saat logout
                 Get.offAll(() => const LoginScreen());
               },
               style: ElevatedButton.styleFrom(
@@ -159,6 +176,7 @@ class BerandaScreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 18,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -166,6 +184,7 @@ class BerandaScreen extends StatelessWidget {
                   'Permohonan berhasil ditambahkan',
                   textAlign: TextAlign.center,
                   style: TextStyle(
+                    color: Colors.white,
                     fontSize: 16,
                   ),
                 ),

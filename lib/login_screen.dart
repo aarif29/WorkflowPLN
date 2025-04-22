@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../widget/navbar_overlay.dart'; // Impor BerandaScreen
+import 'package:get_storage/get_storage.dart';
+import '../widget/navbar_overlay.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,11 +14,28 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   String _user = '';
   String _password = '';
+  final GetStorage _storage = GetStorage();
 
   void _attemptLogin() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      if (_user == 'user' && _password == 'admin') {
+      String? group;
+      String? role;
+
+      // Cek kredensial user dan tentukan grup serta peran
+      if (_user == 'arif' && _password == 'admin') {
+        group = 'ULP Tumpang';
+        role = 'Admin';
+      } else if (_user == 'dij.tumpang' && _password == 'password') {
+        group = 'ULP Tumpang';
+        role = 'Surveyor';
+      }
+
+      if (group != null && role != null) {
+        // Simpan username, grup, dan peran ke GetStorage
+        _storage.write('username', _user);
+        _storage.write('group', group);
+        _storage.write('role', role);
         // Login sukses -> navigasi ke BerandaScreen
         Get.off(() => const BerandaScreen());
       } else {
@@ -32,12 +50,19 @@ class _LoginScreenState extends State<LoginScreen> {
           titleText: const Text(
             'Error',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           messageText: const Text(
             'User atau password salah',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+            ),
           ),
         );
       }
@@ -49,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
-        backgroundColor: Color.fromARGB(255, 40, 40, 40), // Ganti AppColors.primary dengan Colors.blue
+        backgroundColor: const Color.fromARGB(255, 40, 40, 40),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
@@ -62,10 +87,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: InputDecoration(
                   labelText: 'User',
                   border: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.blue), // Ganti AppColors.primary
+                    borderSide: const BorderSide(color: Colors.blue),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
-                  labelStyle: const TextStyle(color: Colors.blue), // Ganti AppColors.primary
+                  labelStyle: const TextStyle(color: Colors.blue),
                 ),
                 validator: (value) => value!.isEmpty ? 'User tidak boleh kosong' : null,
                 onSaved: (value) => _user = value!,
@@ -75,10 +100,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Colors.blue), // Ganti AppColors.primary
+                    borderSide: const BorderSide(color: Colors.blue),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
-                  labelStyle: const TextStyle(color: Colors.blue), // Ganti AppColors.primary
+                  labelStyle: const TextStyle(color: Colors.blue),
                 ),
                 obscureText: true,
                 validator: (value) => value!.isEmpty ? 'Password tidak boleh kosong' : null,
@@ -89,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ElevatedButton(
                 onPressed: _attemptLogin,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue, // Ganti AppColors.primary
+                  backgroundColor: Colors.blue,
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
