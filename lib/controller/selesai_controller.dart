@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SelesaiController extends GetxController {
-  final GetStorage storage = GetStorage();
-  late String group;
+  final supabase = Supabase.instance.client;
+  late String ulp;
 
   final selesaiList = <Map<String, dynamic>>[].obs;
   final searchQuery = ''.obs;
@@ -23,20 +23,40 @@ class SelesaiController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Ambil grup dari GetStorage
-    group = storage.read('group') ?? 'default';
-    // Muat data selesai berdasarkan grup
-    loadSelesai();
+    // Ambil ulp dari profil user dan muat data selesai
+    fetchUlpAndLoadSelesai();
   }
 
+  Future<void> fetchUlpAndLoadSelesai() async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
 
-  void loadSelesai() {
-    // Muat data dari GetStorage dengan prefix grup
-    selesaiList.value = (storage.read('${group}_selesaiList') ?? []).cast<Map<String, dynamic>>();
+    // Ambil ulp dari tabel profiles
+    final profileResponse = await supabase
+        .from('profiles')
+        .select('ulp')
+        .eq('id', userId)
+        .single();
+
+    ulp = profileResponse['ulp'] ?? 'default';
+
+    // Stream data dari Supabase untuk real-time update
+    supabase
+        .from('selesai')
+        .stream(primaryKey: ['id'])
+        .listen((List<Map<String, dynamic>> data) {
+      selesaiList.value = data.map((item) => {
+        'id': item['id'], // Simpan ID untuk keperluan update atau hapus
+        ...item['data'] as Map<String, dynamic>, // Buka data dari kolom 'data'
+      }).toList();
+    });
   }
 
-  void addSelesai(Map<String, dynamic> selesaiData) {
-    selesaiList.add(selesaiData);
-    storage.write('${group}_selesaiList', selesaiList.toList());
+  Future<void> addSelesai(Map<String, dynamic> selesaiData) async {
+    await supabase.from('selesai').insert({
+      'user_id': supabase.auth.currentUser?.id,
+      'ulp': ulp,
+      'data': selesaiData,
+    });
   }
 }

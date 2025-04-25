@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import '../dashboard.dart';
-import '../permohonan_baru.dart';
-import '../antrian.dart';
-import '../selesai.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../screen/dashboard.dart';
+import '../screen/permohonan_baru.dart';
+import '../screen/antrian.dart';
+import '../screen/selesai.dart';
 import '../controller/antrian_controller.dart';
 import '../login_screen.dart';
 
@@ -38,8 +39,8 @@ class ProfilScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final GetStorage storage = GetStorage();
     String username = storage.read('username') ?? 'User';
-    String group = storage.read('group') ?? 'Tidak ada grup';
-    String role = storage.read('role') ?? 'Pengguna'; // Ambil peran dari GetStorage
+    String ulp = storage.read('ulp') ?? 'Tidak ada ULP'; // Ganti 'group' menjadi 'ulp'
+    String role = storage.read('role') ?? 'Pengguna';
 
     return Container(
       color: Colors.black87,
@@ -69,9 +70,9 @@ class ProfilScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8.0),
-            // Grup
+            // ULP
             Text(
-              'Grup: $group',
+              'ULP: $ulp', // Ganti 'Grup' menjadi 'ULP'
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 18.0,
@@ -89,11 +90,15 @@ class ProfilScreen extends StatelessWidget {
             const SizedBox(height: 32.0),
             // Tombol Logout
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 print('Tombol Logout ditekan');
+                // Logout dari Supabase Authentication
+                await Supabase.instance.client.auth.signOut();
+                // Hapus informasi dari GetStorage
                 storage.remove('username');
-                storage.remove('group');
-                storage.remove('role'); // Hapus informasi peran saat logout
+                storage.remove('ulp'); // Ganti 'group' menjadi 'ulp'
+                storage.remove('role');
+                // Navigasi ke LoginScreen
                 Get.offAll(() => const LoginScreen());
               },
               style: ElevatedButton.styleFrom(

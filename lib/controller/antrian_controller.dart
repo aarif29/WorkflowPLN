@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AntrianController extends GetxController {
-  final GetStorage storage = GetStorage();
-  late String group;
+  final supabase = Supabase.instance.client;
+  late String ulp;
 
   final surveyQueue = <Map<String, dynamic>>[].obs;
   final rabQueue = <Map<String, dynamic>>[].obs;
@@ -12,69 +12,107 @@ class AntrianController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Ambil grup dari GetStorage
-    group = storage.read('group') ?? 'default';
-    // Muat data antrian berdasarkan grup
-    loadQueues();
+    // Ambil ulp dari profil user dan muat data antrian
+    fetchUlpAndLoadQueues();
   }
 
-  void loadQueues() {
-    // Muat data dari GetStorage dengan prefix grup
-    surveyQueue.value = (storage.read('${group}_surveyQueue') ?? []).cast<Map<String, dynamic>>();
-    rabQueue.value = (storage.read('${group}_rabQueue') ?? []).cast<Map<String, dynamic>>();
-    amsQueue.value = (storage.read('${group}_amsQueue') ?? []).cast<Map<String, dynamic>>();
+  Future<void> fetchUlpAndLoadQueues() async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    // Ambil ulp dari tabel profiles
+    final profileResponse = await supabase
+        .from('profiles')
+        .select('ulp')
+        .eq('id', userId)
+        .single();
+
+    ulp = profileResponse['ulp'] ?? 'default';
+
+    // Stream data dari Supabase untuk real-time update
+    supabase
+        .from('survey_queue')
+        .stream(primaryKey: ['id'])
+        .listen((List<Map<String, dynamic>> data) {
+      surveyQueue.value = data.map((item) => item['data'] as Map<String, dynamic>).toList();
+    });
+
+    supabase
+        .from('rab_queue')
+        .stream(primaryKey: ['id'])
+        .listen((List<Map<String, dynamic>> data) {
+      rabQueue.value = data.map((item) => item['data'] as Map<String, dynamic>).toList();
+    });
+
+    supabase
+        .from('ams_queue')
+        .stream(primaryKey: ['id'])
+        .listen((List<Map<String, dynamic>> data) {
+      amsQueue.value = data.map((item) => item['data'] as Map<String, dynamic>).toList();
+    });
   }
 
-  void addPermohonan(Map<String, dynamic> permohonan) {
-    surveyQueue.add(permohonan);
-    storage.write('${group}_surveyQueue', surveyQueue.toList());
+  Future<void> addPermohonan(Map<String, dynamic> permohonan) async {
+    await supabase.from('survey_queue').insert({
+      'user_id': supabase.auth.currentUser?.id,
+      'ulp': ulp,
+      'data': permohonan,
+    });
   }
 
-  void updatePermohonan(int index, Map<String, dynamic> data, String queueType) {
+  Future<void> updatePermohonan(String id, Map<String, dynamic> data, String queueType) async {
+    String tableName;
     switch (queueType) {
       case 'survey':
-        surveyQueue[index] = data;
-        storage.write('${group}_surveyQueue', surveyQueue.toList());
+        tableName = 'survey_queue';
         break;
       case 'rab':
-        rabQueue[index] = data;
-        storage.write('${group}_rabQueue', rabQueue.toList());
+        tableName = 'rab_queue';
         break;
       case 'ams':
-        amsQueue[index] = data;
-        storage.write('${group}_amsQueue', amsQueue.toList());
+        tableName = 'ams_queue';
         break;
+      default:
+        throw Exception('Invalid queue type');
     }
+    await supabase.from(tableName).update({'data': data}).eq('id', id);
   }
 
-  void deleteFromQueue(int index, String queueType) {
+  Future<void> deleteFromQueue(String id, String queueType) async {
+    String tableName;
     switch (queueType) {
       case 'survey':
-        surveyQueue.removeAt(index);
-        storage.write('${group}_surveyQueue', surveyQueue.toList());
+        tableName = 'survey_queue';
         break;
       case 'rab':
-        rabQueue.removeAt(index);
-        storage.write('${group}_rabQueue', rabQueue.toList());
+        tableName = 'rab_queue';
         break;
       case 'ams':
-        amsQueue.removeAt(index);
-        storage.write('${group}_amsQueue', amsQueue.toList());
+        tableName = 'ams_queue';
         break;
+      default:
+        throw Exception('Invalid queue type');
     }
+    await supabase.from(tableName).delete().eq('id', id);
   }
 
-  void moveToRabQueue(int index) {
-    rabQueue.add(surveyQueue[index]);
-    surveyQueue.removeAt(index);
-    storage.write('${group}_surveyQueue', surveyQueue.toList());
-    storage.write('${group}_rabQueue', rabQueue.toList());
+  Future<void> moveToRabQueue(String id) async {
+    final item = surveyQueue.firstWhere((item) => item['id'] == id);
+    await supabase.from('rab_queue').insert({
+      'user_id': supabase.auth.currentUser?.id,
+      'ulp': ulp,
+      'data': item,
+    });
+    await deleteFromQueue(id, 'survey');
   }
 
-  void moveToAmsQueue(int index) {
-    amsQueue.add(rabQueue[index]);
-    rabQueue.removeAt(index);
-    storage.write('${group}_rabQueue', rabQueue.toList());
-    storage.write('${group}_amsQueue', amsQueue.toList());
+  Future<void> moveToAmsQueue(String id) async {
+    final item = rabQueue.firstWhere((item) => item['id'] == id);
+    await supabase.from('ams_queue').insert({
+      'user_id': supabase.auth.currentUser?.id,
+      'ulp': ulp,
+      'data': item,
+    });
+    await deleteFromQueue(id, 'rab');
   }
 }

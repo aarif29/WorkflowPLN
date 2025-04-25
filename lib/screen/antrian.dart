@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import '../controller/antrian_controller.dart';
-import '../controller/selesai_controller.dart';
+import '../../controller/antrian_controller.dart';
+import '../../controller/selesai_controller.dart';
 
 class AntrianScreen extends StatelessWidget {
   const AntrianScreen({Key? key}) : super(key: key);
@@ -105,9 +105,10 @@ class AntrianScreen extends StatelessWidget {
                       return _buildListItem(
                         context,
                         permohonan,
-                        index,
+                        permohonan['id'].toString(), // Gunakan ID alih-alih index
                         queueType,
                         controller,
+                        index + 1, // Gunakan index untuk nomor urut di UI saja
                       );
                     },
                   ),
@@ -120,9 +121,10 @@ class AntrianScreen extends StatelessWidget {
   Widget _buildListItem(
     BuildContext context,
     Map<String, dynamic> permohonan,
-    int index,
+    String id,
     String queueType,
     AntrianController controller,
+    int displayNumber, // Nomor urut untuk UI
   ) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4.0),
@@ -134,7 +136,7 @@ class AntrianScreen extends StatelessWidget {
         leading: CircleAvatar(
           backgroundColor: _getQueueColor(queueType),
           child: Text(
-            '${index + 1}',
+            '$displayNumber',
             style: const TextStyle(color: Colors.white),
           ),
         ),
@@ -167,7 +169,7 @@ class AntrianScreen extends StatelessWidget {
         onTap: () => _showDetailDialog(
           context,
           permohonan,
-          index,
+          id, // Gunakan ID alih-alih index
           queueType,
           controller,
         ),
@@ -188,7 +190,7 @@ class AntrianScreen extends StatelessWidget {
   void _showDetailDialog(
     BuildContext context,
     Map<String, dynamic> permohonan,
-    int index,
+    String id,
     String queueType,
     AntrianController controller,
   ) {
@@ -320,7 +322,7 @@ class AntrianScreen extends StatelessWidget {
                         _buildActionButton(
                           'Simpan',
                           Colors.green,
-                          () => _updateAndClose(controller, index, queueType, {
+                          () => _updateAndClose(controller, id, queueType, {
                             'name': name.value,
                             'phone': phone.value,
                             'address': address.value,
@@ -336,7 +338,7 @@ class AntrianScreen extends StatelessWidget {
                           () => _showDeleteConfirmation(
                             context,
                             controller,
-                            index,
+                            id,
                             queueType,
                           ),
                         ),
@@ -349,7 +351,7 @@ class AntrianScreen extends StatelessWidget {
                           'Selesai Survey',
                           Colors.orange,
                           () {
-                            _updateAndClose(controller, index, queueType, {
+                            _updateAndClose(controller, id, queueType, {
                               'name': name.value,
                               'phone': phone.value,
                               'address': address.value,
@@ -358,7 +360,7 @@ class AntrianScreen extends StatelessWidget {
                               'dateSurvey': dateSurvey.value,
                               'keterangan': keterangan.value,
                             });
-                            controller.moveToRabQueue(index);
+                            controller.moveToRabQueue(id);
                             Get.snackbar(
                               'Sukses',
                               'Permohonan dipindahkan ke Antrian RAB',
@@ -448,7 +450,7 @@ class AntrianScreen extends StatelessWidget {
                         _buildActionButton(
                           'Simpan',
                           Colors.green,
-                          () => _updateAndClose(controller, index, queueType, {
+                          () => _updateAndClose(controller, id, queueType, {
                             'name': name.value,
                             'phone': phone.value,
                             'address': address.value,
@@ -464,7 +466,7 @@ class AntrianScreen extends StatelessWidget {
                           () => _showDeleteConfirmation(
                             context,
                             controller,
-                            index,
+                            id,
                             queueType,
                           ),
                         ),
@@ -477,7 +479,7 @@ class AntrianScreen extends StatelessWidget {
                           'Selesai RAB',
                           Colors.green,
                           () {
-                            _updateAndClose(controller, index, queueType, {
+                            _updateAndClose(controller, id, queueType, {
                               'name': name.value,
                               'phone': phone.value,
                               'address': address.value,
@@ -489,7 +491,7 @@ class AntrianScreen extends StatelessWidget {
                               'rabCompletionDate':
                                   selectedRabCompletionDate.value.toString(),
                             });
-                            controller.moveToAmsQueue(index);
+                            controller.moveToAmsQueue(id);
                             Get.snackbar(
                               'Sukses',
                               'Permohonan dipindahkan ke Antrian AMS',
@@ -587,7 +589,7 @@ class AntrianScreen extends StatelessWidget {
                         () => _showDeleteConfirmation(
                           context,
                           controller,
-                          index,
+                          id,
                           queueType,
                         ),
                         padding: const EdgeInsets.symmetric(
@@ -621,7 +623,7 @@ class AntrianScreen extends StatelessWidget {
                             Get.find<SelesaiController>().addSelesai(
                               selesaiData,
                             );
-                            controller.deleteFromQueue(index, queueType);
+                            controller.deleteFromQueue(id, queueType);
                             Get.back();
                             Get.snackbar(
                               'Sukses',
@@ -661,7 +663,7 @@ class AntrianScreen extends StatelessWidget {
   void _showDeleteConfirmation(
     BuildContext context,
     AntrianController controller,
-    int index,
+    String id,
     String queueType,
   ) {
     Get.dialog(
@@ -686,7 +688,7 @@ class AntrianScreen extends StatelessWidget {
           TextButton(
             onPressed: () {
               Get.back();
-              controller.deleteFromQueue(index, queueType);
+              controller.deleteFromQueue(id, queueType);
               Get.back();
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 Get.snackbar(
@@ -787,11 +789,11 @@ class AntrianScreen extends StatelessWidget {
 
   void _updateAndClose(
     AntrianController controller,
-    int index,
+    String id,
     String queueType,
     Map<String, dynamic> data,
   ) {
-    controller.updatePermohonan(index, data, queueType);
+    controller.updatePermohonan(id, data, queueType);
     Get.back();
   }
 

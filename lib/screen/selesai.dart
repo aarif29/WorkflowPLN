@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controller/selesai_controller.dart';
+import '../../controller/selesai_controller.dart';
 import 'package:intl/intl.dart';
 
 class SelesaiScreen extends StatelessWidget {

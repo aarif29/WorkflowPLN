@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 
 class PermohonanBaruScreen extends StatefulWidget {
   final Function(Map<String, String?>) onPermohonanAdded;
@@ -19,8 +21,7 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _applicationTypeController =
-      TextEditingController();
+  final TextEditingController _applicationTypeController = TextEditingController();
 
   DateTime? _selectedDate;
   String? _selectedApplicationType;
@@ -204,8 +205,8 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
         if (pickedDate != null) {
           setState(() {
             _selectedDate = pickedDate;
-            _dateController.text =
-                "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}";
+            // Ubah format tanggal menjadi yyyy-MM-dd
+            _dateController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
           });
         }
       },
@@ -267,26 +268,125 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
   }
 
   void _saveData() {
+    // Validasi input
+    if (_nameController.text.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Nama tidak boleh kosong',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+        titleText: const Text(
+          'Error',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        messageText: const Text(
+          'Nama tidak boleh kosong',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16),
+        ),
+      );
+      return;
+    }
+
+    if (_applicationTypeController.text.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Jenis permohonan tidak boleh kosong',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+        titleText: const Text(
+          'Error',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        messageText: const Text(
+          'Jenis permohonan tidak boleh kosong',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16),
+        ),
+      );
+      return;
+    }
+
     final newPermohonan = {
       'name': _nameController.text,
       'phone': _phoneController.text,
       'address': _addressController.text,
-      'date': _dateController.text,
+      'dateSurvey': _dateController.text, // Ubah key menjadi dateSurvey agar sesuai dengan AntrianScreen
       'applicationType': _applicationTypeController.text,
+      'notes': '', // Tambahkan field notes dengan nilai default kosong
     };
 
-    // Panggil callback untuk menambahkan permohonan baru
-    widget.onPermohonanAdded(newPermohonan);
+    try {
+      // Panggil callback untuk menambahkan permohonan baru
+      widget.onPermohonanAdded(newPermohonan);
 
-    // Bersihkan input fields
-    _clearControllers();
-    
-    // Tutup bottom sheet
-    Navigator.pop(context);
-    
-    // Navigasi ke halaman antrian setelah data disimpan
-    // Ini menggantikan fungsi _showSuccessMessage()
-    widget.onNavigateToAntrian();
+      // Bersihkan input fields
+      _clearControllers();
+
+      // Tutup bottom sheet
+      Navigator.pop(context);
+
+      // Tampilkan snackbar sukses
+      Get.snackbar(
+        'Sukses',
+        'Permohonan berhasil ditambahkan',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+        titleText: const Text(
+          'Sukses',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        messageText: const Text(
+          'Permohonan berhasil ditambahkan',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16),
+        ),
+      );
+
+      // Navigasi ke halaman antrian setelah data disimpan
+      widget.onNavigateToAntrian();
+    } catch (e) {
+      // Tampilkan snackbar error jika gagal menyimpan
+      Get.snackbar(
+        'Error',
+        'Gagal menambahkan permohonan: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+        titleText: const Text(
+          'Error',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        messageText: Text(
+          'Gagal menambahkan permohonan: $e',
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 16),
+        ),
+      );
+    }
   }
 
   void _clearControllers() {

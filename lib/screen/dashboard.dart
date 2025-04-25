@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../controller/antrian_controller.dart';
-import '../controller/selesai_controller.dart';
-import '../widget/navbar_overlay.dart';
+import '../../controller/antrian_controller.dart';
+import '../../controller/selesai_controller.dart';
+import '../../widget/navbar_overlay.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
