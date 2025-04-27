@@ -12,14 +12,18 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   String _username = '';
+  String _email = '';
   String _password = '';
   String _confirmPassword = '';
   String? _selectedUlp;
   String? _selectedRole;
-  bool _isLoading = false; // Tambahkan state untuk indikator loading
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   // Daftar ULP dan role
   final List<String> ulps = [
+    'All', // Ditambahkan untuk SuperAdmin
     'BATU',
     'BLIMBING',
     'BULULAWANG',
@@ -36,6 +40,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   ];
 
   final List<String> roles = [
+    'SuperAdmin', // Ditambahkan untuk SuperAdmin
     'MULP',
     'TEKNIK',
     'PP',
@@ -47,13 +52,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _formKey.currentState!.save();
 
       setState(() {
-        _isLoading = true; // Tampilkan indikator loading
+        _isLoading = true;
       });
 
       try {
         // Daftar menggunakan Supabase Authentication
         final response = await Supabase.instance.client.auth.signUp(
-          email: '$_username@example.com', // Anggap username adalah bagian dari email
+          email: _email,
           password: _password,
           data: {
             'username': _username,
@@ -66,11 +71,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           // Tampilkan snackbar sukses
           Get.snackbar(
             'Sukses',
-            'Registrasi berhasil, silakan login',
+            'Register berhasil, silahkan konfirmasi email anda dan coba login ulang!',
             backgroundColor: Colors.green,
             colorText: Colors.white,
             snackPosition: SnackPosition.BOTTOM,
-            duration: const Duration(seconds: 1),
+            duration: const Duration(seconds: 3),
             titleText: const Text(
               'Sukses',
               textAlign: TextAlign.center,
@@ -81,7 +86,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
             messageText: const Text(
-              'Registrasi berhasil, silakan login',
+              'Register berhasil, silahkan konfirmasi email anda dan coba login ulang!',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
@@ -95,13 +100,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         }
       } catch (error) {
         // Registrasi gagal -> tampilkan snackbar
+        String errorMessage = 'Registrasi gagal: $error';
+        if (error.toString().contains('Email already registered')) {
+          errorMessage = 'Email sudah terdaftar, gunakan email lain';
+        }
+
         Get.snackbar(
           'Error',
-          'Registrasi gagal: ${error.toString()}',
+          errorMessage,
           backgroundColor: Colors.red,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 1),
+          duration: const Duration(seconds: 2),
           titleText: const Text(
             'Error',
             textAlign: TextAlign.center,
@@ -112,7 +122,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           ),
           messageText: Text(
-            'Registrasi gagal: ${error.toString()}',
+            errorMessage,
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Colors.white,
@@ -122,7 +132,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       } finally {
         setState(() {
-          _isLoading = false; // Sembunyikan indikator loading
+          _isLoading = false;
         });
       }
     }
@@ -158,16 +168,50 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 20),
                 TextFormField(
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: 'Email',
                     border: OutlineInputBorder(
                       borderSide: const BorderSide(color: Colors.blue),
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                     labelStyle: const TextStyle(color: Colors.blue),
                   ),
-                  obscureText: true,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Email tidak boleh kosong';
+                    }
+                    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                      return 'Masukkan email yang valid';
+                    }
+                    return null;
+                  },
+                  onSaved: (value) => _email = value!,
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.blue),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    labelStyle: const TextStyle(color: Colors.blue),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.blue,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
+                  obscureText: _obscurePassword,
                   validator: (value) => value!.isEmpty ? 'Password tidak boleh kosong' : null,
                   onSaved: (value) => _password = value!,
+                  onChanged: (value) => _password = value,
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -178,8 +222,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                     labelStyle: const TextStyle(color: Colors.blue),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.blue,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                        });
+                      },
+                    ),
                   ),
-                  obscureText: true,
+                  obscureText: _obscureConfirmPassword,
                   validator: (value) {
                     if (value!.isEmpty) return 'Konfirmasi password tidak boleh kosong';
                     if (value != _password) return 'Password tidak cocok';
@@ -237,7 +292,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 20),
                 _isLoading
-                    ? const CircularProgressIndicator() // Tampilkan indikator loading
+                    ? const CircularProgressIndicator()
                     : ElevatedButton(
                         onPressed: _attemptRegister,
                         style: ElevatedButton.styleFrom(
