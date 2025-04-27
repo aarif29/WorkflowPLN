@@ -101,14 +101,16 @@ class AntrianScreen extends StatelessWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: queue.length,
                     itemBuilder: (context, index) {
-                      final permohonan = queue[index];
+                      final item = queue[index];
+                      final permohonan = item['data'] as Map<String, dynamic>;
+                      final rowId = item['row_id'].toString();
                       return _buildListItem(
                         context,
                         permohonan,
-                        permohonan['id'].toString(), // Gunakan ID alih-alih index
+                        rowId,
                         queueType,
                         controller,
-                        index + 1, // Gunakan index untuk nomor urut di UI saja
+                        index + 1,
                       );
                     },
                   ),
@@ -121,10 +123,10 @@ class AntrianScreen extends StatelessWidget {
   Widget _buildListItem(
     BuildContext context,
     Map<String, dynamic> permohonan,
-    String id,
+    String rowId,
     String queueType,
     AntrianController controller,
-    int displayNumber, // Nomor urut untuk UI
+    int displayNumber,
   ) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4.0),
@@ -169,7 +171,7 @@ class AntrianScreen extends StatelessWidget {
         onTap: () => _showDetailDialog(
           context,
           permohonan,
-          id, // Gunakan ID alih-alih index
+          rowId,
           queueType,
           controller,
         ),
@@ -190,18 +192,22 @@ class AntrianScreen extends StatelessWidget {
   void _showDetailDialog(
     BuildContext context,
     Map<String, dynamic> permohonan,
-    String id,
+    String rowId,
     String queueType,
     AntrianController controller,
   ) {
     final name = RxString(permohonan['name']?.toString() ?? '');
     final phone = RxString(permohonan['phone']?.toString() ?? '');
     final address = RxString(permohonan['address']?.toString() ?? '');
-    final applicationType = RxString(permohonan['applicationType']?.toString() ?? '');
+    final applicationType = RxString(
+      permohonan['applicationType']?.toString() ?? '',
+    );
     final notes = RxString(permohonan['notes']?.toString() ?? '');
     final dateSurvey = RxString(permohonan['dateSurvey']?.toString() ?? '');
     final keterangan = RxString(permohonan['keterangan']?.toString() ?? '');
-    final rabCompletionDate = RxString(permohonan['rabCompletionDate']?.toString() ?? '');
+    final rabCompletionDate = RxString(
+      permohonan['rabCompletionDate']?.toString() ?? '',
+    );
     final noAms = RxString('');
 
     final nameController = TextEditingController(text: name.value);
@@ -274,45 +280,53 @@ class AntrianScreen extends StatelessWidget {
                   _buildTextField('Catatan', notes, notesController),
                   if (queueType == 'survey') ...[
                     const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final DateTime? pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime(2100),
-                          builder: (context, child) => Theme(
-                            data: ThemeData.dark().copyWith(
-                              colorScheme: const ColorScheme.dark(
-                                primary: Colors.blueAccent,
-                                onPrimary: Colors.white,
-                                surface: Colors.black,
-                                onSurface: Colors.white,
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final DateTime? pickedDate = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime(2100),
+                            builder: (context, child) => Theme(
+                              data: ThemeData.dark().copyWith(
+                                colorScheme: const ColorScheme.dark(
+                                  primary: Colors.blueAccent,
+                                  onPrimary: Colors.white,
+                                  surface: Colors.black,
+                                  onSurface: Colors.white,
+                                ),
                               ),
+                              child: child!,
                             ),
-                            child: child!,
+                          );
+                          if (pickedDate != null) {
+                            selectedDate.value = pickedDate;
+                            dateSurvey.value = pickedDate.toString();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
                           ),
-                        );
-                        if (pickedDate != null) {
-                          selectedDate.value = pickedDate;
-                          dateSurvey.value = pickedDate.toString();
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                      ),
-                      child: const Text(
-                        'Set Tanggal Survey',
-                        style: TextStyle(color: Colors.white),
+                        ),
+                        child: const Text(
+                          'Set Tanggal Survey',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
                     if (selectedDate.value != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          'Tanggal Survey: ${DateFormat('d MMMM y', 'id').format(selectedDate.value!)}',
-                          style: const TextStyle(color: Colors.white),
+                        child: Center(
+                          child: Text(
+                            'Tanggal Survey: ${DateFormat('d MMMM y', 'id').format(selectedDate.value!)}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
                         ),
                       ),
                     const SizedBox(height: 16),
@@ -322,7 +336,7 @@ class AntrianScreen extends StatelessWidget {
                         _buildActionButton(
                           'Simpan',
                           Colors.green,
-                          () => _updateAndClose(controller, id, queueType, {
+                          () => _updateAndClose(controller, rowId, queueType, {
                             'name': name.value,
                             'phone': phone.value,
                             'address': address.value,
@@ -338,7 +352,7 @@ class AntrianScreen extends StatelessWidget {
                           () => _showDeleteConfirmation(
                             context,
                             controller,
-                            id,
+                            rowId,
                             queueType,
                           ),
                         ),
@@ -350,8 +364,8 @@ class AntrianScreen extends StatelessWidget {
                         child: _buildActionButton(
                           'Selesai Survey',
                           Colors.orange,
-                          () {
-                            _updateAndClose(controller, id, queueType, {
+                          () async {
+                            await _updateAndClose(controller, rowId, queueType, {
                               'name': name.value,
                               'phone': phone.value,
                               'address': address.value,
@@ -360,28 +374,7 @@ class AntrianScreen extends StatelessWidget {
                               'dateSurvey': dateSurvey.value,
                               'keterangan': keterangan.value,
                             });
-                            controller.moveToRabQueue(id);
-                            Get.snackbar(
-                              'Sukses',
-                              'Permohonan dipindahkan ke Antrian RAB',
-                              backgroundColor: Colors.orange,
-                              colorText: Colors.white,
-                              snackPosition: SnackPosition.BOTTOM,
-                              duration: const Duration(seconds: 2),
-                              titleText: const Text(
-                                'Sukses',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              messageText: const Text(
-                                'Permohonan dipindahkan ke Antrian RAB',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            );
+                            await controller.moveToRabQueue(rowId);
                           },
                           fullWidth: true,
                         ),
@@ -450,7 +443,7 @@ class AntrianScreen extends StatelessWidget {
                         _buildActionButton(
                           'Simpan',
                           Colors.green,
-                          () => _updateAndClose(controller, id, queueType, {
+                          () => _updateAndClose(controller, rowId, queueType, {
                             'name': name.value,
                             'phone': phone.value,
                             'address': address.value,
@@ -466,7 +459,7 @@ class AntrianScreen extends StatelessWidget {
                           () => _showDeleteConfirmation(
                             context,
                             controller,
-                            id,
+                            rowId,
                             queueType,
                           ),
                         ),
@@ -478,8 +471,8 @@ class AntrianScreen extends StatelessWidget {
                         child: _buildActionButton(
                           'Selesai RAB',
                           Colors.green,
-                          () {
-                            _updateAndClose(controller, id, queueType, {
+                          () async {
+                            await _updateAndClose(controller, rowId, queueType, {
                               'name': name.value,
                               'phone': phone.value,
                               'address': address.value,
@@ -491,28 +484,7 @@ class AntrianScreen extends StatelessWidget {
                               'rabCompletionDate':
                                   selectedRabCompletionDate.value.toString(),
                             });
-                            controller.moveToAmsQueue(id);
-                            Get.snackbar(
-                              'Sukses',
-                              'Permohonan dipindahkan ke Antrian AMS',
-                              backgroundColor: Colors.green,
-                              colorText: Colors.white,
-                              snackPosition: SnackPosition.BOTTOM,
-                              duration: const Duration(seconds: 2),
-                              titleText: const Text(
-                                'Sukses',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              messageText: const Text(
-                                'Permohonan dipindahkan ke Antrian AMS',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            );
+                            await controller.moveToAmsQueue(rowId);
                           },
                           fullWidth: true,
                         ),
@@ -589,7 +561,7 @@ class AntrianScreen extends StatelessWidget {
                         () => _showDeleteConfirmation(
                           context,
                           controller,
-                          id,
+                          rowId,
                           queueType,
                         ),
                         padding: const EdgeInsets.symmetric(
@@ -604,7 +576,7 @@ class AntrianScreen extends StatelessWidget {
                         child: _buildActionButton(
                           'Selesaikan Permohonan',
                           Colors.green,
-                          () {
+                          () async {
                             final selesaiData = {
                               'id': noAms.value,
                               'nama': name.value,
@@ -615,15 +587,13 @@ class AntrianScreen extends StatelessWidget {
                               'dateSurvey': dateSurvey.value,
                               'keterangan': keterangan.value,
                               'rabCompletionDate': rabCompletionDate.value,
-                              'tanggal': DateFormat(
-                                'yyyy-MM-dd',
-                              ).format(DateTime.now()),
+                              'tanggal': DateFormat('yyyy-MM-dd')
+                                  .format(DateTime.now()),
                               'status': 'Selesai',
                             };
-                            Get.find<SelesaiController>().addSelesai(
-                              selesaiData,
-                            );
-                            controller.deleteFromQueue(id, queueType);
+                            await Get.find<SelesaiController>()
+                                .addSelesai(selesaiData);
+                            await controller.deleteFromQueue(rowId, queueType);
                             Get.back();
                             Get.snackbar(
                               'Sukses',
@@ -663,7 +633,7 @@ class AntrianScreen extends StatelessWidget {
   void _showDeleteConfirmation(
     BuildContext context,
     AntrianController controller,
-    String id,
+    String rowId,
     String queueType,
   ) {
     Get.dialog(
@@ -686,34 +656,32 @@ class AntrianScreen extends StatelessWidget {
             ),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Get.back();
-              controller.deleteFromQueue(id, queueType);
+              await controller.deleteFromQueue(rowId, queueType);
               Get.back();
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                Get.snackbar(
-                  '',
-                  '',
-                  backgroundColor: Colors.red,
-                  colorText: Colors.white,
-                  snackPosition: SnackPosition.BOTTOM,
-                  duration: const Duration(seconds: 2),
-                  titleText: const Text(
-                    'Sukses',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+              Get.snackbar(
+                '',
+                '',
+                backgroundColor: Colors.red,
+                colorText: Colors.white,
+                snackPosition: SnackPosition.BOTTOM,
+                duration: const Duration(seconds: 2),
+                titleText: const Text(
+                  'Sukses',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                  messageText: const Text(
-                    'Permohonan berhasil dihapus',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
-                );
-              });
+                ),
+                messageText: const Text(
+                  'Permohonan berhasil dihapus',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              );
             },
             child: const Text('Ya', style: TextStyle(color: Colors.red)),
           ),
@@ -787,13 +755,13 @@ class AntrianScreen extends StatelessWidget {
     );
   }
 
-  void _updateAndClose(
+  Future<void> _updateAndClose(
     AntrianController controller,
-    String id,
+    String rowId,
     String queueType,
     Map<String, dynamic> data,
-  ) {
-    controller.updatePermohonan(id, data, queueType);
+  ) async {
+    await controller.updatePermohonan(rowId, data, queueType);
     Get.back();
   }
 
