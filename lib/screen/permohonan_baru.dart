@@ -109,6 +109,11 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
   }
 
   void _showInputForm() {
+    // Pastikan state bersih sebelum menampilkan form
+    _clearControllers(); // Membersihkan controller setiap kali form dibuka
+    _selectedDate = null;
+    _selectedApplicationType = null;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -192,12 +197,12 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
       onTap: () async {
         final DateTime? pickedDate = await showDatePicker(
           context: context,
-          initialDate: DateTime.now(),
+          initialDate: _selectedDate ?? DateTime.now(), // Gunakan tanggal terpilih atau sekarang
           firstDate: DateTime(2000),
           lastDate: DateTime(2101),
           builder: (context, child) {
             return Theme(
-              data: ThemeData.dark(),
+              data: ThemeData.dark(), // Atau sesuaikan tema date picker Anda
               child: child!,
             );
           },
@@ -205,7 +210,6 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
         if (pickedDate != null) {
           setState(() {
             _selectedDate = pickedDate;
-            // Ubah format tanggal menjadi yyyy-MM-dd
             _dateController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
           });
         }
@@ -255,7 +259,7 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
                           _selectedApplicationType = type;
                           _applicationTypeController.text = type;
                         });
-                        Navigator.pop(context);
+                        Navigator.pop(context); // Tutup dialog pilih jenis
                       },
                     ),
                   )
@@ -267,127 +271,68 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
     );
   }
 
-  void _saveData() {
-    // Validasi input
-    if (_nameController.text.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Nama tidak boleh kosong',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-        titleText: const Text(
-          'Error',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        messageText: const Text(
-          'Nama tidak boleh kosong',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
-        ),
-      );
-      return;
-    }
-
-    if (_applicationTypeController.text.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Jenis permohonan tidak boleh kosong',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-        titleText: const Text(
-          'Error',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        messageText: const Text(
-          'Jenis permohonan tidak boleh kosong',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
-        ),
-      );
-      return;
-    }
-
-    final newPermohonan = {
-      'name': _nameController.text,
-      'phone': _phoneController.text,
-      'address': _addressController.text,
-      'dateSurvey': _dateController.text, // Ubah key menjadi dateSurvey agar sesuai dengan AntrianScreen
-      'applicationType': _applicationTypeController.text,
-      'notes': '', // Tambahkan field notes dengan nilai default kosong
-    };
-
-    try {
-      // Panggil callback untuk menambahkan permohonan baru
-      widget.onPermohonanAdded(newPermohonan);
-
-      // Bersihkan input fields
-      _clearControllers();
-
-      // Tutup bottom sheet
-      Navigator.pop(context);
-
-      // Tampilkan snackbar sukses
-      Get.snackbar(
-        'Sukses',
-        'Permohonan berhasil ditambahkan',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-        titleText: const Text(
-          'Sukses',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        messageText: const Text(
-          'Permohonan berhasil ditambahkan',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
-        ),
-      );
-
-      // Navigasi ke halaman antrian setelah data disimpan
-      widget.onNavigateToAntrian();
-    } catch (e) {
-      // Tampilkan snackbar error jika gagal menyimpan
-      Get.snackbar(
-        'Error',
-        'Gagal menambahkan permohonan: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-        titleText: const Text(
-          'Error',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        messageText: Text(
-          'Gagal menambahkan permohonan: $e',
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 16),
-        ),
-      );
-    }
+ void _saveData() {
+  // Validasi input
+  if (_nameController.text.isEmpty) {
+    _showErrorSnackbar('Nama tidak boleh kosong');
+    return;
   }
+
+  if (_applicationTypeController.text.isEmpty) {
+    _showErrorSnackbar('Jenis permohonan tidak boleh kosong');
+    return;
+  }
+
+  final newPermohonan = {
+    'name': _nameController.text,
+    'phone': _phoneController.text,
+    'address': _addressController.text,
+    'dateSurvey': _dateController.text,
+    'applicationType': _applicationTypeController.text,
+    'notes': '',
+  };
+
+  try {
+    widget.onPermohonanAdded(newPermohonan);
+    Navigator.pop(context);     
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        widget.onNavigateToAntrian();
+      }
+    });
+
+  } catch (e) {
+    _showErrorSnackbar('Gagal menambahkan permohonan: ${e.toString()}');
+  }
+}
+
+void _showErrorSnackbar(String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.white),
+      ),
+      backgroundColor: Colors.red,
+      duration: const Duration(seconds: 2),
+    ),
+  );
+}
+
+void _showSuccessSnackbar(String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.white),
+      ),
+      backgroundColor: Colors.green,
+      duration: const Duration(seconds: 2),
+    ),
+  );
+}
 
   void _clearControllers() {
     _nameController.clear();
@@ -395,5 +340,11 @@ class _PermohonanBaruScreenState extends State<PermohonanBaruScreen> {
     _addressController.clear();
     _dateController.clear();
     _applicationTypeController.clear();
+    // Reset juga variabel state yang menampung nilai terpilih
+    // Ini penting agar saat form dibuka lagi, tidak ada nilai sisa
+    // setState(() { // Tidak perlu setState jika hanya membersihkan controller
+    //   _selectedDate = null;
+    //   _selectedApplicationType = null;
+    // });
   }
 }
